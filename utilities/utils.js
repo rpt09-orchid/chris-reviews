@@ -20,9 +20,7 @@ module.exports = {
   },
   download: function(url, filename, callback) {
     request.head(url, (err, res, body) => {
-      // console.log('content-type: ', res.headers['content-type']);
-      // console.log('content-length: ', res.headers['content-length']);
-      request(url).pipe(fs.createWriteStream(filename)).on('close', callback)
+      request(url).pipe(fs.createWriteStream(filename)).on('close', callback);
     });
   },
   saveImagesAndS3Upload: function(text) {
@@ -40,8 +38,8 @@ module.exports = {
                 resolve();
               })
               .catch(err => {
-                reject(err);
-              })
+                reject('S3 error:' + err);
+              });
           });
         });
       });

@@ -13,11 +13,12 @@ AWS.config.update({
 const s3 = new AWS.S3();
 
 const s3Upload = (filepath) => {
-  let params = {
-    Bucket: 'kento-firebnb',
+  const params = {
+    Bucket: process.env.AWS_BUCKET,
     Body: fs.createReadStream(filepath),
-    Key: 'folder/' + Date.now() + '_' + path.basename(filepath)
-  }
+    Key: 'petImages/' + Date.now() + '_' + path.basename(filepath)
+  };
+
   return new Promise((resolve, reject) => {
     s3.upload(params, (err, data) => {
       if (err) {

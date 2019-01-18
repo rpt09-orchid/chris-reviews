@@ -8,9 +8,6 @@ const utils = require('../utilities/utils');
 const pool = require('../startup/database');
 const cors = require('cors');
 
-// const aws = require('../services/aws');
-// const startupDebugger = require('debug')('app:startup');
-// const reviews = require('../router');
 
 //Middleware
 app.use(cors());
@@ -21,15 +18,12 @@ app.use(express.static(path.join(__dirname, '/../client/dist'), {
   maxAge: '1y'
 }));
 
-app.use('/:id', express.static(path.join(__dirname, '/../client/dist'), {
-  maxAge: '1y'
-}));
-// app.use('/:id', express.static(path.join(__dirname, '/../client/dist/index.html')));
+
 const client = pool.connect(() => {
   console.log('connected to db!');
 });
 
-app.get('/reviews/:id', async (req, res) => {
+app.get('/reviews/:id(\\d+$)', async (req, res) => {
   const id = JSON.parse(req.params.id) || 1;
   console.log('query: ', req.query);
   let search, keyWords;
@@ -88,5 +82,10 @@ app.get('/ratings/:id', async (req, res) => {
     res.status(404).json({error: `ID ${id} does not exist`});
   }
 });
+
+app.get('*', (req, res) => {
+  res.status(404).json({error: `${req.url} Not found`});
+});
+
 
 module.exports = app;
