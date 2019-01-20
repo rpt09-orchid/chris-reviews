@@ -71,6 +71,7 @@ class Reviews extends Component {
               <Review 
                 key={index} 
                 review={item} 
+                HOSTS={this.props.HOSTS}
                 keyWords={this.props.keyWords}
               />
             );

@@ -1,5 +1,4 @@
 const pg = require('pg');
-// const client = require('../startup/database');
 const client = require('../startup/database');
 
 // Converting numeric str type to number in postGres

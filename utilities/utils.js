@@ -12,7 +12,6 @@ module.exports = {
           reject(err);
         } else {
           console.log('OK: ' + filename);
-          // console.log(data);
           resolve(data);
         }
       });
@@ -20,9 +19,7 @@ module.exports = {
   },
   download: function(url, filename, callback) {
     request.head(url, (err, res, body) => {
-      // console.log('content-type: ', res.headers['content-type']);
-      // console.log('content-length: ', res.headers['content-length']);
-      request(url).pipe(fs.createWriteStream(filename)).on('close', callback)
+      request(url).pipe(fs.createWriteStream(filename)).on('close', callback);
     });
   },
   saveImagesAndS3Upload: function(text) {
@@ -40,8 +37,8 @@ module.exports = {
                 resolve();
               })
               .catch(err => {
-                reject(err);
-              })
+                reject('S3 error:' + err);
+              });
           });
         });
       });
@@ -54,9 +51,12 @@ module.exports = {
     });
   },
   getRandomUrls: function({s3Urls, maxUrls}, users) {
+    console.log(maxUrls);
+    console.log(s3Urls);
     const urls = [];
     for (let i = 0; i < users; i++) {
       let randNum = _.random(1, maxUrls);
+
       urls.push(s3Urls[randNum]);
     }
     return urls;

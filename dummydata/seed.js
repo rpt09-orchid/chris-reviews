@@ -3,12 +3,28 @@ const reviews = require('./index');
 const utils = require('../utilities/utils');
 const path = require('path');
 const pool = require('../startup/database');
+const fs = require('fs');
+const Promise = require('bluebird');
+
+const createTables = () => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(path.resolve(__dirname + '/../db/postgres.sql'), (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
+  }).then((data) => {
+    const sqlString = data.toString();
+    return db.queryDB(sqlString);
+  });
+}
 
 const insertAll = (reviews) => {
   return new Promise((resolve, reject) => {
     reviews.forEach(async (review, index) => {
-      // const review = reviews[0];
-      // console.log('review: ', review);
+
       const queryUser = {
         name: 'insertUser',
         text: 'insert into users(first, avatar) values ($1, $2)',
@@ -51,6 +67,8 @@ const insertAll = (reviews) => {
 }
 
 const updateUrls = (urlsObj, users) => {
+  console.log('users:', users);
+  console.log('urlsObj:',urlsObj);
   const randomUrls = utils.getRandomUrls(urlsObj, users);
   let queryStr = 'update users as u set \n' +
   'avatar = c.avatar \n' + 
@@ -72,32 +90,36 @@ const updateUrls = (urlsObj, users) => {
   return db.queryDB(SetQuery);
 };
 
-const main = (async() => {
-  const client = await pool.connect(() => {
-    console.log('connected to db!');
-  });
+const main = (async () => {
   try {
-    const client = await pool.connect(() => {
+    await pool.connect(() => {
       console.log('connected to db!');
     });
     try {
       console.log('Initializing...');
+      console.log('creating tables...');
+      await createTables();
       console.log('saving to db...');
-      const insertion = await insertAll(reviews);
+      await insertAll(reviews);
       console.log('data saved to db');
-      console.log('processing urls...')
+      console.log('[step to be removed later] processing urls...')
+      // @TODO: remove users table should be in other service
       const urls = await utils.readFile(path.join(__dirname, '../') + '/urls.txt');
-      console.log('saving images and uploading to s3...')
-      const s3Urls = await utils.saveImagesAndS3Upload(urls);
-      console.log('updating urls in db...');
-      await updateUrls(s3Urls, reviews.length);
+      // console.log('saving images and uploading to s3...')
+      // const s3Urls = await utils.saveImagesAndS3Upload(urls);
+      console.log('[step to be removed later] updating urls in db...');
+      const fakeUrls = urls.split('\n');
+      console.log(fakeUrls)
+      await updateUrls({
+        s3Urls: fakeUrls,
+        maxUrls: fakeUrls.length
+      }, reviews.length);
       console.log('done!');
     } catch (err) {
       console.log('error occured in seeding: ', err);
     } finally {
-      await client.release(() => {
-        console.log('checked out db');
-      });
+      console.log('seeding complete');
+      process.exit();
     }
   } catch(err) {
     console.log('error occured in connecting: ', err);
