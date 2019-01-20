@@ -67,6 +67,8 @@ const insertAll = (reviews) => {
 }
 
 const updateUrls = (urlsObj, users) => {
+  console.log('users:', users);
+  console.log('urlsObj:',urlsObj);
   const randomUrls = utils.getRandomUrls(urlsObj, users);
   let queryStr = 'update users as u set \n' +
   'avatar = c.avatar \n' + 
@@ -100,12 +102,18 @@ const main = (async () => {
       console.log('saving to db...');
       await insertAll(reviews);
       console.log('data saved to db');
-      console.log('processing urls...')
+      console.log('[step to be removed later] processing urls...')
+      // @TODO: remove users table should be in other service
       const urls = await utils.readFile(path.join(__dirname, '../') + '/urls.txt');
-      console.log('saving images and uploading to s3...')
-      const s3Urls = await utils.saveImagesAndS3Upload(urls);
-      console.log('updating urls in db...');
-      await updateUrls(s3Urls, reviews.length);
+      // console.log('saving images and uploading to s3...')
+      // const s3Urls = await utils.saveImagesAndS3Upload(urls);
+      console.log('[step to be removed later] updating urls in db...');
+      const fakeUrls = urls.split('\n');
+      console.log(fakeUrls)
+      await updateUrls({
+        s3Urls: fakeUrls,
+        maxUrls: fakeUrls.length
+      }, reviews.length);
       console.log('done!');
     } catch (err) {
       console.log('error occured in seeding: ', err);

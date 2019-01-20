@@ -18,7 +18,7 @@ class Reply extends Component {
   }
   componentDidMount() {
     const propertyId = this.props.propertyId;
-    axios.get(`http://rooms.4gk2mkr3wk.us-west-2.elasticbeanstalk.com/users/${propertyId}`)
+    axios.get(`${this.props.HOSTS.rooms}/users/${propertyId}`)
       .then(res => res.data.data)
       .then(res => {
         this.setState({ 
@@ -223,6 +223,7 @@ class Review extends Component {
           reply ? (
             <div className={styles.replyContainer}>
               <Reply 
+                HOSTS={this.props.HOSTS}
                 mapDateText={this.mapDateText}
                 reply={reply} 
                 replyDate={replyDate}

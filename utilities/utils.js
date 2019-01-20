@@ -12,7 +12,6 @@ module.exports = {
           reject(err);
         } else {
           console.log('OK: ' + filename);
-          // console.log(data);
           resolve(data);
         }
       });
@@ -52,9 +51,12 @@ module.exports = {
     });
   },
   getRandomUrls: function({s3Urls, maxUrls}, users) {
+    console.log(maxUrls);
+    console.log(s3Urls);
     const urls = [];
     for (let i = 0; i < users; i++) {
       let randNum = _.random(1, maxUrls);
+
       urls.push(s3Urls[randNum]);
     }
     return urls;

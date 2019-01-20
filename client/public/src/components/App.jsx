@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import styles from '../styles/app.styles.css';
-
 import Reviews from './Reviews.jsx';
 import ReviewsHeader from './ReviewsHeader.jsx';
 import RatingsBox from './RatingsBox.jsx';
@@ -18,15 +17,27 @@ class App extends Component {
       searchText: ''
     };
     this.handleState = this.handleState.bind(this);
+    if (process.env.NODE_ENV === 'production') {
+      this.HOSTS = {
+        reviews: 'http://firebnb-reviews.8di9c2yryn.us-east-1.elasticbeanstalk.com',
+        rooms: 'i dont know yet'
+      }
+    } else {
+      this.HOSTS = {
+        reviews: 'http://localhost:3003',
+        rooms: 'http://localhost:3001'
+      }
+    }
   }
+
+
   componentDidMount() {
-    const ebUrl = 'http://firebnb-reviews.8di9c2yryn.us-east-1.elasticbeanstalk.com'; 
     let path = window.location.pathname;
     
     if (!path.match(/^\/[0-9]+/)) {
       path = '/1';
     }
-    axios.get(`${ebUrl}/reviews${path}`)
+    axios.get(`${this.HOSTS.reviews}/reviews${path}`)
       .then(res => res.data)
       .then(res => {
         this.setState({ 
@@ -67,6 +78,7 @@ class App extends Component {
             handleState={this.handleState}/>
           { searchStatement }
           <Reviews 
+            HOSTS={this.HOSTS}
             reviews={this.state.reviews} 
             keyWords={this.state.keyWords}/>
         </div>
