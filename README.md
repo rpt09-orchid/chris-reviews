@@ -1,4 +1,4 @@
-# 1. Firebnb reviews
+# Firebnb reviews
 
 > This is the reviews microservice for the Airbnb clone, Firebnb
 
@@ -114,6 +114,7 @@ First thing was to get setup from [original repo](https://github.com/rpt09-mulde
   - having to create tables by  using `db\postgres.sql` as a dump. I introduced this into the seed script
 
 **Refactor Tests**
+
 
 The tests seemed to be broken mainly due to some route issues probably not address later on in development so had to refactor these slightly.
 
