@@ -1,6 +1,11 @@
-DROP SCHEMA public CASCADE;
+DROP SCHEMA IF EXISTS public CASCADE;
 
 CREATE SCHEMA public;
+
+
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS users;
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
@@ -15,14 +20,12 @@ CREATE TABLE IF NOT EXISTS reviews (
   date text,
   review text,
   reply text,
-  reply_date text,
-  FOREIGN KEY (user_id) 
-  REFERENCES users(id)
+  reply_date text
 );
 
 CREATE TABLE IF NOT EXISTS ratings (
   id SERIAL PRIMARY KEY,
-  review_id integer,
+  review_id SERIAL,
   average numeric(4,2),
   accuracy integer,
   communication integer,
@@ -31,5 +34,5 @@ CREATE TABLE IF NOT EXISTS ratings (
   checkin integer,
   value integer,
   FOREIGN KEY (review_id) 
-  REFERENCES reviews(id)
+  REFERENCES reviews(id) DEFERRABLE INITIALLY IMMEDIATE
 );

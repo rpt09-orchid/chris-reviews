@@ -1,4 +1,4 @@
-# Firebnb reviews
+# 1. Firebnb reviews
 
 > This is the reviews microservice for the Airbnb clone, Firebnb
 
@@ -22,6 +22,7 @@
   - [1.4. Development Setup](#14-development-setup)
   - [1.5. Log](#15-log)
     - [1.5.1. Development setup (+ Refactoring)](#151-development-setup--refactoring)
+    - [1.5.2. Million Records (2 Tables of 10million)](#152-million-records-2-tables-of-10million)
 
 <!-- /TOC -->
 ## 1.3. Usage
@@ -79,8 +80,10 @@ $> brew install PostgreSQL
 $> brew services start postgresql
 # create the db with `createdb` command
 $> createdb firebnb-reviews
-# seed  db, this will also download jpegs and upload to S3 so make sure you ahve your credentials in your .env
+# seed  db,make sure you ahve your credentials in your .env
 $> npm run seed-database
+# for 10 million records each for reviews and ratings..do 
+$> npm run megaseed
 $> psql firebnb-reviews #to enter psql repl,  to confirm creation
 $ (repl)> \dt; #to show all tables (should see 'paths now)
 $ (repl)> \q; #to exit repl
@@ -142,3 +145,35 @@ if (process.env.NODE_ENV === 'production') {
 **Gutting S3 Requirements**
 
 Previously there was an S3 bucket requirement for a `users` table profile images. But later I found the `user` service is part of another service's (`rooms`) jurisdiction. This then became unnnecessary and was only use to supply urls that aren't needed so I removed this requirement in seeding db and will remove associated functions involving this for the future. This keeps seeding a lot more simple and I can completely remove this table leaving only `reviews` and `ratings`. I will likely also have to check client/server app and refactor if using anything from this table...
+
+### 1.5.2. Million Records (2 Tables of 10million)
+
+** stats **
+
+Ok to do the records in postgresql I used  `COPY` WITH CSV Format. The trick was to use only minimum amount of `1000` records, save that to CSV, and then repeat the `COPY` command on the same records over and over again (batches) until 10 million is achieved. This resulted in roughly about `10,000,000` records in `2.5 minutes` on my macbook pro. Doing more unique records, like `50,000`, this resulted in longer csv processing, and about `5 minutes` of processing.
+
+Further more I needed `ratings` table as well as my primary `reviews` and was able to generate `20 million` in about `6 minutes`. All of these settings can be adjusted in the `megaseed.js` file like so:
+
+``` js
+const UNIQUE_RECORDS = 1000;
+const TOTAL_RECORDS = 10000000;
+const MAX_USER_ID = 1000000;
+const MAX_PROPERTY_ID = 1000000;
+```
+
+**.env woes**
+
+One annoying thing I ran into was my `.env` was in the root, and for the longest time `psql` was not throwing any connection errors, likely becuase it is loose with its credential requirements, but I couldnt figure out for the life of me why it wasn't updating the db. After change the config path like so:
+
+``` js
+// after resolving the path to the parent location, everything started working correctly
+require('dotenv').config({path: path.resolve(__dirname + '/../.env')});
+```
+
+**console visuals**
+
+![loading_visuals](http://g.recordit.co/PMgAFLKnQK.gif)
+
+Also for fun I made the progress bar and colors in order to appease the waiting process. Turns out console.log had a little to no effect to overall wait times.
+
+![finished](https://i.imgur.com/4eiaSdqr.png)
