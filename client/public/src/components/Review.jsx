@@ -141,9 +141,9 @@ class Review extends Component {
   }
 
   render() {
-    const { propertyId } = this.props.review.r;
-    const { name, avatarUrl } = this.props.review.r.user;
-    const { date, review, reply, replyDate } = this.props.review.r.review; 
+    const { propertyId } = this.props.review;
+    const { name, avatarUrl } = this.props.review.user;
+    const { date, review, reply, reply_date: replyDate } = this.props.review; 
 
     let reviewText, splitReview;
 

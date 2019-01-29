@@ -2,7 +2,7 @@ import React from 'react';
 import styles from '../styles/stars.styles.css';
 
 const Stars = ({ average }) => {
-  average = Math.round(average * 2) / 2;
+  average = Math.round(Number(Math.floor(average*2)/2) * 2) / 2;
   const half = (!!((average / 0.5) % 2));
   let numStars = average;
   if (half) {
