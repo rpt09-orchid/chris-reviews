@@ -23,7 +23,7 @@
   - [1.5. Log](#15-log)
     - [1.5.1. Development setup (+ Refactoring)](#151-development-setup--refactoring)
     - [1.5.2. Million Records (2 Tables of 10million)](#152-million-records-2-tables-of-10million)
-    - [1.5.3. Seconnd Database](#153-seconnd-database)
+    - [1.5.3. Second Database](#153-second-database)
     - [1.5.4. Comparison](#154-comparison)
 
 <!-- /TOC -->
@@ -197,7 +197,7 @@ if you do need unique ids for an entry outside of just  1000 unique ids, you cou
     });
 ```
 
-### 1.5.3. Seconnd Database
+### 1.5.3. Second Database
 
 **installation**
 I chose Cassandra as my 2nd database which is noSQL and also very performance focused and used by facebook, Netflix and ebay for large amounts of records and horizontal scaling.

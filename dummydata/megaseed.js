@@ -333,7 +333,6 @@ const generateRecords = () => {
     tables.ratings[lastIndex].average = getAverage(tables.ratings[lastIndex]);
     i += reviewsAmount - 1;
   }
-  debugger;
   return tables;
 }
  
