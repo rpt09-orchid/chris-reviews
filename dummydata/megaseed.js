@@ -55,7 +55,7 @@ const writeFile = async (name, contents) => {
   if (name.indexOf('/') !== -1) {
     const dir = __dirname + '/' + name.split('/').slice(0, -1).join('/');
     await Promise.promisify(fs.stat)(dir).catch(async (err) => {
-      if (err && err.errno === 34) {
+      if (err) {
         console.log('making folder..' + dir);
         await Promise.promisify(fs.mkdir)(dir, { recursive: true }).catch((err) => {
         console.log('error occurred making directory.', err);

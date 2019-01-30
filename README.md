@@ -20,10 +20,13 @@
     - [1.3.1. API endpoints](#131-api-endpoints)
     - [1.3.2. Component](#132-component)
   - [1.4. Development Setup](#14-development-setup)
+    - [1.4.1. Postgres setup](#141-postgres-setup)
+    - [1.4.2. Cassandra setup](#142-cassandra-setup)
+    - [1.4.3. React build setup](#143-react-build-setup)
   - [1.5. Log](#15-log)
     - [1.5.1. Development setup (+ Refactoring)](#151-development-setup--refactoring)
     - [1.5.2. Million Records (2 Tables of 10million)](#152-million-records-2-tables-of-10million)
-    - [1.5.3. Second Database](#153-second-database)
+    - [1.5.3. Cassandra: Second Database](#153-cassandra-second-database)
     - [1.5.4. Comparison](#154-comparison)
 
 <!-- /TOC -->
@@ -59,6 +62,11 @@ This service uses the following dev stack:
  
 Postgres can be installed through homebrew.  For more information, see [postgres install guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04)
 
+
+### 1.4.1. Postgres setup
+
+**postgres:**
+
 Inside `.env` place your Server + SQL credentials
 ```
 HOST=localhost
@@ -70,7 +78,8 @@ DB_USER=
 DB_PASS= 
 ```  
 
-Installing
+
+Installing + seeding
 
 ```sh
 ## install npm dependencies in both server and client folders
@@ -83,33 +92,60 @@ $> brew services start postgresql
 # NOTE: for cassandra see installation and setup in log below
 # create the db with `createdb` command
 $> createdb firebnb-reviews
+# great now check if you're in
+$> psql firebnb-reviews #to enter psql repl,  to confirm creation
+$ (repl)> \dt; #to show all tables
+$ (repl)> \q; #to exit repl
 # seed  db,make sure you ahve your credentials in your .env
-$> npm run seed-database
-# Pfor 10 million records each for reviews and ratings..
 # postgres do.. 
 $> npm run megaseed
-# cassandra do.. 
-$> npm run megaseed --db=cassandra
-$> psql firebnb-reviews #to enter psql repl,  to confirm creation
-$ (repl)> \dt; #to show all tables (should see 'paths now)
-$ (repl)> \q; #to exit repl
-```  
-
-
-``` sh
+# to test
 $> npm test #synonymous with jest
 # To execute (load postgres db):
 $> npm start #should be running on 3003
-# Excecute (load cassandra db)
-$> npm start --db=cassandra
-# To build in react:
-$> npm run start (builds once to /dist)
-$> npm run build (builds once to /dist with minified version)
-# or for watching file changes
-$> npm run start-client (builds to /dist with --watch flag)
+```  
+
+### 1.4.2. Cassandra setup
+
+**cassandra**
+
+For more indepth information check out [1.5.3. Cassandra: Second Database](#153-cassandra-second-database) Section in log.
+
+Inside `.env` place your DB Name credentials
+
+```
+CASSANDRA_DB_NAME=firebnbreviews
 ```
 
+``` sh
+# latest python (if dont have)
+$> brew install python
+# cassandra shell
+$> pip install cql
+# start it up
+$> brew install cassandra
+$> brew services start cassandra
+# gointo shell, if error see next section about connection refused
+$> cqlsh
+# create and confirm creation of keyspace (keypsace is kind of similar to creating a database in sql)
+$ cqlsh> CREATE KEYSPACE firebnbreviews WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};
+$ cqlsh> DESC KEYSPACES
+# cassandra do.. 
+$> npm run megaseedCassandra
+# Excecute (load cassandra db)
+$> npm start --db=cassandra
+```
 
+### 1.4.3. React build setup
+
+**React buil**
+``` sh
+# To build in react, go to client folder package.json:
+$> npm run start #(builds once to /dist)
+$> npm run build #(builds once to /dist with minified version)
+# or for watching file changes, from root
+$> npm run buildWatch #(builds to /dist with --watch flag)
+```
 ## 1.5. Log
 
 ### 1.5.1. Development setup (+ Refactoring)
@@ -197,7 +233,7 @@ if you do need unique ids for an entry outside of just  1000 unique ids, you cou
     });
 ```
 
-### 1.5.3. Second Database
+### 1.5.3. Cassandra: Second Database
 
 **installation**
 I chose Cassandra as my 2nd database which is noSQL and also very performance focused and used by facebook, Netflix and ebay for large amounts of records and horizontal scaling.
@@ -211,6 +247,7 @@ $> brew install python
 # cassandra shell
 $> pip install cql
 # start it up
+$> brew install cassandra
 $> brew services start cassandra
 # gointo shell, if error see next section about connection refused
 $> cqlsh
@@ -274,7 +311,7 @@ So what i did was set a CSV_BATCH_SIZE of n (currently 100 csvs), it would gener
 
 **even more issues**
 
-I also was getting write timeouts occassionally so had to adjust the `cassandra.yaml` `writeTimeout` setting. I 10x'd it from `20000` to `20000` ms. that fixed this issue.
+I also was getting write timeouts occassionally so had to adjust the `/usr/local/etc/cassandra/cassandra.yaml` `write_request_timeout_in_ms` setting. I 10x'd it from `20000` to `20000` ms. that fixed this issue.
 
 I also had drive issues running out of space, because on any creation of a table , cassandra creates data snapshots and backups which turned out to eat up my entire disk and just cause db instability crashing all the time. Clearing this out solved it but two nice commands to know were:
 
@@ -294,7 +331,7 @@ To ease the megaseed process i made a flag for triggering a cassandra bulk load 
 # postgres do.. 
 $> npm run megaseed --db=psql
 # cassandra do.. 
-$> npm run megaseed --db=cassandra
+$> npm run megaseedCassandra
 # similarly for starting up node
 # postgres do.. 
 $> npm start --db=psql
