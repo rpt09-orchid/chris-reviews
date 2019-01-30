@@ -8,8 +8,8 @@
     "node": ">=10.13.0"
   },
   "scripts": {
-    "start": "node sserver/index.js",
-    "startCassandra": "node sserver/index.js --db=cassandra",
+    "start": "node server/index.js",
+    "startCassandra": "node server/index.js --db=cassandra",
     "start-dev": "nodemon server/index.js",
     "start-dev": "nodemon server/index.js --db=cassandra",
     "seed-database": "node ./dummydata/seed.js",
