@@ -13,9 +13,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(morgan('tiny'));
-app.use('/', express.static(path.join(__dirname, '/../client/dist'), {
-  maxAge: '1y'
-}));
+app.use('/', express.static(path.join(__dirname, '/../client/dist')));
  
  
 app.get('/:id(\\d+$)*?', (req, res) => {
@@ -25,7 +23,6 @@ app.get('/:id(\\d+$)*?', (req, res) => {
  
 app.get('/reviews/:id(\\d+$)', async (req, res) => {
   const id = JSON.parse(req.params.id) || 1;
-  console.log('query: ', req.query);
   let search, keyWords;
   if (req.query.search) {
     search = JSON.parse(req.query.search);
@@ -51,12 +48,10 @@ app.get('/reviews/:id(\\d+$)', async (req, res) => {
   } else {
     // Original get request.  Gets all data
     try {
-      
       const reviews = await db.getReviewsById(id);
       const avgRating = await db.getAverageRatings(reviews.map((review) => {
         return review.id;
       }));
-      console.log(avgRating);
       if (!reviews.length) {
         res.status(404).json({error: `ID ${id} does not exist`});
         return;
@@ -74,7 +69,6 @@ app.get('/reviews/:id(\\d+$)', async (req, res) => {
 });
  
 app.get('/ratings/:id', async (req, res) => {
-  console.log('hiiii');
   const id = JSON.parse(req.params.id);
  
   try {

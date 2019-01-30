@@ -46,14 +46,9 @@ module.exports = {
         ) r FROM reviews
       WHERE property_id = ${id};`;
   
-    const query = {
-      name: 'getReviewsById',
-      text: queryStr
-    };
-    return this.queryDB(query).then((rows) => {
+    return this.queryDB(queryStr).then((rows) => {
       return rows.map((item) => {return item.r; });
     }).then((data) => {
-      console.log(data);
       return data.map((item) => {
         // create user
         item.user = {
@@ -66,7 +61,6 @@ module.exports = {
     });
   },
   getAverageRatings: function(ids) {
-    console.log(ids);
     const queryStr = `SELECT * FROM ratings where id IN (${ids.join(',')});`;
     const remap = {
       average: 'avg',
@@ -95,14 +89,10 @@ module.exports = {
   },
   getNumberReviewsById: function(id) {
     const queryStr = `select count(*) from reviews where property_id = ${id}`;
-    const query = {
-      name: 'getnumReviews',
-      text: queryStr
-    };
-    return this.queryDB(query);
+    return this.queryDB(queryStr);
   },
   SearchReviewsByWords: function(words, id) {
-    console.log('searching words');
+
     let likeText = '';
     if (!words.length) {
       likeText += " ' '";
@@ -140,11 +130,6 @@ module.exports = {
         FROM public.reviews re INNER JOIN public.ratings ra ON ra.review_id = re.id
         WHERE re.property_id = ${id} and (${likeText});`;
   
-    console.log('queryStr: ', queryStr);
-    const query = {
-      name: 'searchReviewsByWords',
-      text: queryStr
-    };
-    return this.queryDB(query);
+    return this.queryDB(queryStr);
   }
 };
