@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Stars from './Stars.jsx';
 import styles from '../styles/rating.styles.css';
 
-const Rating = ({ name, avg }) => {
+const Rating = ({ name, avg, onChangeStar }) => {
   return (
     <div className={styles.ratingContainer}>
       <div className={styles.ratingContainerInner}>
@@ -12,7 +12,7 @@ const Rating = ({ name, avg }) => {
           </span>
         </div>
         <div className={styles.starsContainer}>
-          <Stars average={avg}/>
+          <Stars average={avg} onChangeStar={onChangeStar} />
         </div>
       </div>
     </div>

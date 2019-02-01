@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import styles from '../styles/app.styles.css';
+import AddReview from './AddReview.jsx';
 import Reviews from './Reviews.jsx';
 import ReviewsHeader from './ReviewsHeader.jsx';
 import RatingsBox from './RatingsBox.jsx';
@@ -14,9 +15,17 @@ class App extends Component {
       reviews: null,
       keyWords: [],
       totalReviews: null,
-      searchText: ''
+      searchText: '',
+      addReviewVisible: false,
+      reviewBody: '',
+      activeUser: {
+        name: '',
+        avatarUrl: 'https://s3-us-west-2.amazonaws.com/chris-firebnb/defaults/default.png'
+      }
     };
     this.handleState = this.handleState.bind(this);
+    this.onAddReviewbuttonClick = this.onAddReviewbuttonClick.bind(this);
+    this.onReviewBodyChange = this.onReviewBodyChange.bind(this);
     if (process.env.NODE_ENV === 'production') {
       this.HOSTS = {
         reviews: 'http://firebnb-reviews.8di9c2yryn.us-east-1.elasticbeanstalk.com',
@@ -28,8 +37,8 @@ class App extends Component {
         rooms: 'http://localhost:3001'
       }
     }
-  }
 
+  }
 
   componentDidMount() {
     let path = window.location.pathname;
@@ -37,6 +46,18 @@ class App extends Component {
     if (!path.match(/^\/[0-9]+/)) {
       path = '/1';
     }
+
+    axios.get(`${this.HOSTS.rooms}/users${path}`)
+      .then(res => res.data.data)
+      .then(res => {
+        this.setState({
+          activeUser:{ 
+            name: res.user,
+            avatarUrl: res.avatar
+          }
+        });
+      });
+
     axios.get(`${this.HOSTS.reviews}/reviews${path}`)
       .then(res => res.data)
       .then(res => {
@@ -46,6 +67,18 @@ class App extends Component {
           totalReviews: res.reviews.length
         });
       });
+  }
+
+  onReviewBodyChange(text) {
+    this.setState({
+      reviewBody: text
+    })
+  }
+
+  onAddReviewbuttonClick() {
+    this.setState({
+      addReviewVisible: !this.state.addReviewVisible
+    });
   }
 
   handleState(prop, newState) {
@@ -77,6 +110,12 @@ class App extends Component {
             searchText={this.state.searchText}
             handleState={this.handleState}/>
           { searchStatement }
+          <AddReview 
+            activeUser={this.state.activeUser}
+            addReviewVisible={this.state.addReviewVisible}
+            onReviewBodyChange={this.onReviewBodyChange}
+            onAddReviewbuttonClick={this.onAddReviewbuttonClick}
+          />
           <Reviews 
             HOSTS={this.HOSTS}
             reviews={this.state.reviews} 
