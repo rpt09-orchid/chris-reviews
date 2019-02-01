@@ -3,15 +3,14 @@ DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
 
 
-DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS ratings;
 DROP TABLE IF EXISTS reviews;
-DROP TABLE IF EXISTS users;
 
-CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  first text,
-  avatar text
-);
+-- CREATE TABLE IF NOT EXISTS users (
+--   id SERIAL PRIMARY KEY,
+--   first text,
+--   avatar text
+-- );
 
 CREATE TABLE IF NOT EXISTS reviews (
   id SERIAL PRIMARY KEY,
