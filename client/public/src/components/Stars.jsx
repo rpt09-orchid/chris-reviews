@@ -5,7 +5,7 @@ import styles from '../styles/stars.styles.css';
 
 class Stars extends React.Component {
   
-  constructor({average}) {
+  constructor({average, onChangeStar}) {
     super();
     this.average = Math.round(Number(Math.floor(average*2)/2) * 2) / 2;
     this.timer = null;
@@ -46,6 +46,7 @@ class Stars extends React.Component {
         <span 
           onMouseOver={() => {this.mouseOver()}}
           onMouseOut={() => {this.mouseOut()}}
+          onClick={() => {this.props.onChangeStar(this.state.hoveringOn)}}
         >
           {
             [...new Array(5)].map((star, index) => {

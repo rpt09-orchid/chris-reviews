@@ -26,6 +26,7 @@ class App extends Component {
     this.handleState = this.handleState.bind(this);
     this.onAddReviewbuttonClick = this.onAddReviewbuttonClick.bind(this);
     this.onReviewBodyChange = this.onReviewBodyChange.bind(this);
+    this.onChangeRating = this.onChangeRating.bind(this);
     if (process.env.NODE_ENV === 'production') {
       this.HOSTS = {
         reviews: 'http://firebnb-reviews.8di9c2yryn.us-east-1.elasticbeanstalk.com',
@@ -67,6 +68,10 @@ class App extends Component {
           totalReviews: res.reviews.length
         });
       });
+  }
+
+  onChangeRating(type, val) {
+    console.log(`${type} will change to ${val}`)
   }
 
   onReviewBodyChange(text) {
@@ -115,6 +120,7 @@ class App extends Component {
             addReviewVisible={this.state.addReviewVisible}
             onReviewBodyChange={this.onReviewBodyChange}
             onAddReviewbuttonClick={this.onAddReviewbuttonClick}
+            onChangeRating={this.onChangeRating}
           />
           <Reviews 
             HOSTS={this.HOSTS}
