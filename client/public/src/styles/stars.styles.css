@@ -33,9 +33,20 @@
   color: var(--color-star-blank-color, #D8D8D8) !important;
 }
 
+.removalStar {
+  color: var(--color-star-blank-color, #525252) !important;
+  cursor: pointer;
+}
+
 .hoverStar {
   color: var(--color-star-blank-color, #f4958e) !important;
   cursor: pointer;
+}
+
+
+.greyMode {
+  opacity: 0.5;
+  color: var(--color-star-babu-highlight-color, #5b5b5b) !important;
 }
 
 .halfStarContainer.interactive {

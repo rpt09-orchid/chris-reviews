@@ -4,11 +4,27 @@
   font-family: Circular,-apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif !important;
 }
 
-.inputWrapper .textarea, 
+.inputWrapper .textAreaWpr, 
 .inputWrapper .controls .right,
 .inputWrapper .mainInput {
   animation: fadeIn 1s ease-in-out;
 }
+
+.inputWrapper .mainInput .errorBox {
+  margin: 1rem 0;
+  font-size: .8rem;
+  color: #ff0000;
+  padding: 1rem 0;
+}
+
+.inputWrapper .successBox {
+  margin: 1rem 0;
+  font-size: .8rem;
+  font-weight: bold;
+  color: #1fb86e;
+  padding: 1rem 0;
+}
+
 
 .inputWrapper .controls {
   padding-bottom: 2rem;
@@ -72,16 +88,20 @@
   vertical-align: middle;
 }
 
-.inputWrapper .textarea {
-  width: 100%;
-  padding: 2rem;
-  height: 10rem;
+.inputWrapper .textAreaWpr {
   margin: 1rem 0;
   border-radius: 1rem;
   border: none;
+  padding: 2rem;
   background: #fafafa;
-  resize: none;
   font-family: Circular,-apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif !important;
+}
+.inputWrapper .textAreaWpr textarea{
+  width: 100%;
+  height: 10rem;
+  resize: none;
+  border: none;
+  background: #fafafa;
 }
 
 @keyframes fadeIn {

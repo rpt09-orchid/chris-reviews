@@ -12,13 +12,18 @@ class App extends Component {
     super(props);
     this.state = {
       ratings: null,
+      id: null,
+      error: false,
       reviews: null,
       keyWords: [],
       totalReviews: null,
       searchText: '',
       addReviewVisible: false,
+      refreshUserRatings: false,
       reviewBody: '',
+      userRatings: {},
       activeUser: {
+        id: 1,
         name: '',
         avatarUrl: 'https://s3-us-west-2.amazonaws.com/chris-firebnb/defaults/default.png'
       }
@@ -27,6 +32,7 @@ class App extends Component {
     this.onAddReviewbuttonClick = this.onAddReviewbuttonClick.bind(this);
     this.onReviewBodyChange = this.onReviewBodyChange.bind(this);
     this.onChangeRating = this.onChangeRating.bind(this);
+    this.onSubmission = this.onSubmission.bind(this);
     if (process.env.NODE_ENV === 'production') {
       this.HOSTS = {
         reviews: 'http://firebnb-reviews.8di9c2yryn.us-east-1.elasticbeanstalk.com',
@@ -48,11 +54,14 @@ class App extends Component {
       path = '/1';
     }
 
+    this.setState({id: path.replace('/', '')});
+
     axios.get(`${this.HOSTS.rooms}/users${path}`)
       .then(res => res.data.data)
       .then(res => {
         this.setState({
           activeUser:{ 
+            id: path.replace('/', ''),
             name: res.user,
             avatarUrl: res.avatar
           }
@@ -70,13 +79,46 @@ class App extends Component {
       });
   }
 
-  onChangeRating(type, val) {
-    console.log(`${type} will change to ${val}`)
+  onSubmission() {
+    this.setState({error: false});
+    axios.post(`${this.HOSTS.reviews}/reviews/${this.state.id}`, {
+      review_body: this.state.reviewBody,
+      user_id: this.state.activeUser.id,
+      user_ratings: this.state.userRatings
+      
+    }).then((resp) => {
+      console.log(resp);
+      if (resp.data && resp.data.error) {
+        this.setState({error: resp.data.error});
+        return;
+      } else {
+        console.log('yayy');
+        this.setState({
+            success: 'Review added!', 
+            addReviewVisible: false, 
+            reviewBody: '',
+            userRatings: {}
+          }, () => {
+          setTimeout(() => {
+            this.setState({success: false});
+          }, 5000);
+        })
+      }
+    }).catch((error) => {
+      console.log('Error!', error);
+      this.setState({error: error});
+    });
   }
 
-  onReviewBodyChange(text) {
+  onChangeRating(type, val) {
+    const newRatings = Object.assign({}, this.state.userRatings);
+    newRatings[type] = (val === this.state.userRatings[type]) ? 0 : val;
+    this.setState({userRatings: newRatings});
+  }
+
+  onReviewBodyChange(e) {
     this.setState({
-      reviewBody: text
+      reviewBody: e.target.value
     })
   }
 
@@ -116,11 +158,17 @@ class App extends Component {
             handleState={this.handleState}/>
           { searchStatement }
           <AddReview 
+            success={this.state.success}
+            error={this.state.error}
             activeUser={this.state.activeUser}
             addReviewVisible={this.state.addReviewVisible}
             onReviewBodyChange={this.onReviewBodyChange}
             onAddReviewbuttonClick={this.onAddReviewbuttonClick}
             onChangeRating={this.onChangeRating}
+            onSubmission={this.onSubmission}
+            userRatings={this.state.userRatings}
+            refreshUserRatings={this.setState.refreshUserRatings}
+            userRatings={this.state.userRatings}
           />
           <Reviews 
             HOSTS={this.HOSTS}

@@ -14,6 +14,15 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(morgan('tiny'));
 app.use('/', express.static(path.join(__dirname, '/../client/dist')));
+app.use((req, res, next) => {
+  res.sendSuccessJSON = (data) => {
+    res.status(200).send(JSON.stringify({status: 'success', data: data}));
+  };
+  res.sendErrorJSON = (error) => {
+    res.status(200).send(JSON.stringify({status: 'error', error: error}));
+  };
+  next();
+})
  
  
 app.get('/:id(\\d+$)*?', (req, res) => {
@@ -65,6 +74,37 @@ app.get('/reviews/:id(\\d+$)', async (req, res) => {
       res.status(404).json({error: `ID ${id} does not exist: ${err}`});
       console.log('err in process: ', err);
     } 
+  }
+});
+
+app.post('/reviews/:id', async (req, res) => {
+  const requiredAttributes = ['review_body', 'user_ratings', 'user_id'];
+  const requiredRatings = {
+    'acc': 'Accuracy',
+    'com': 'Communication',
+    'cle': 'Cleanliness',
+    'loc': 'Location',
+    'chk': 'Check-In',
+    'val': 'Value'};
+  const missingFields = requiredAttributes.filter((key) => {
+    return (req.body[key] === undefined || !req.body[key])
+  });
+  if (missingFields.length) {
+    res.sendErrorJSON('Missing required fields: ' + missingFields.join(', '));
+    return;
+  } else {
+    const missingRatings = Object.keys(requiredRatings).filter((key) => {
+      return req.body.user_ratings[key] === undefined;
+    });
+    if (missingRatings.length) {
+      res.sendErrorJSON('Missing required rating fields: ' + 
+      missingRatings.map((key) => {
+        return requiredRatings[key];
+      })).join(', ');
+      return;
+    }
+    // const newReviews = await db.getReviewsById(id);
+    res.sendSuccessJSON(req.body);
   }
 });
  

@@ -5,25 +5,29 @@ import styles from '../styles/stars.styles.css';
 
 class Stars extends React.Component {
   
-  constructor({average, onChangeStar}) {
+  constructor({average, onChangeStar, interactive, wprClass}) {
     super();
+    this.wprClass = wprClass;
+    this.interactive = interactive;
     this.average = Math.round(Number(Math.floor(average*2)/2) * 2) / 2;
     this.timer = null;
     this.state = {
       hoveringOn: 0
     };
-    ['mouseOut', 'getValue', 'mouseOver'].map((method) => {
+    ['mouseOut', 'getValue', 'mouseOver', 'getStarType'].map((method) => {
       this[method] = this[method].bind(this);
     })
   }
 
   mouseOut() {
-    clearInterval(this.timer);
-    this.timer = setTimeout(() => {
-      this.setState({
-        hoveringOn: 0
-      });
-    }, 100);
+    if (this.interactive) {
+      clearInterval(this.timer);
+      this.timer = setTimeout(() => {
+        this.setState({
+          hoveringOn: 0
+        });
+      }, 100);
+    }
   };
 
   getValue() {
@@ -31,14 +35,48 @@ class Stars extends React.Component {
   }
 
   mouseOver(newHover) {
-    clearInterval(this.timer);
-    console.log(newHover);
-    if (newHover) {
-      this.setState({
-        hoveringOn: newHover
-      });
+    if (this.interactive) {
+      clearInterval(this.timer);
+      if (newHover) {
+        this.setState({
+          hoveringOn: newHover
+        });
+      }
     }
   };
+
+  getStarType(rating) {
+    let starType = styles.greyStar;
+    if (this.interactive && this.state.hoveringOn) {
+        if (rating <= this.average) {
+          starType = styles.removalStar;
+        } 
+        if (this.state.hoveringOn >= rating) {
+          starType = styles.hoverStar;
+          if (this.average >= this.state.hoveringOn) { 
+            if (this.state.hoveringOn <= this.average) {
+              starType = styles.greenStar;
+            }
+          } else if (this.average < this.state.hoveringOn) {
+            if (this.average >= rating) {
+             starType = styles.greenStar;
+            } else {
+              starType = styles.hoverStar;
+            }
+          }
+        } 
+    } else {
+      starType = (this.getValue() >= rating) ? styles.greenStar : styles.greyStar;
+    }
+
+    return starType;
+
+  }
+
+
+  componentWillUpdate(props) {
+    this.average = Math.round(Number(Math.floor(props.average*2)/2) * 2) / 2;
+  }
   
   render() {
     return (
@@ -46,15 +84,14 @@ class Stars extends React.Component {
         <span 
           onMouseOver={() => {this.mouseOver()}}
           onMouseOut={() => {this.mouseOut()}}
-          onClick={() => {this.props.onChangeStar(this.state.hoveringOn)}}
+          onClick={() => {if (this.props.onChangeStar) {this.props.onChangeStar(this.state.hoveringOn)}}}
         >
           {
             [...new Array(5)].map((star, index) => {
               return (
-                <span key={index} className={`${styles.halfStarContainer} ${styles.interactive}`}>
+                <span key={index} className={`${styles.halfStarContainer} ${styles[this.wprClass] ?  styles[this.wprClass]  : ''} ${this.interactive  ? styles.interactive : ''}`}>
                   <span 
-                    className={(this.getValue() >= index + 0.5)  ?  (this.state.hoveringOn ? styles.hoverStar : styles.greenStar) : styles.greyStar} 
-                    data-rating={index + 0.5}
+                    className={this.getStarType(index + 0.5)} 
                     onMouseOver={() => {this.mouseOver(index + 0.5)}}
 
                   >
@@ -68,8 +105,7 @@ class Stars extends React.Component {
                     </svg>
                   </span>
                   <span 
-                    className={(this.getValue() >= index + 1)  ?  (this.state.hoveringOn ? styles.hoverStar : styles.greenStar): styles.greyStar} 
-                    data-rating={index + 1}
+                    className={this.getStarType(index + 1)} 
                     onMouseOver={() => {this.mouseOver(index + 1)}}
                   >
                     <svg 

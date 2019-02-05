@@ -22,6 +22,9 @@ module.exports = {
       });
     });
   },
+  createReview: function(data) {
+
+  },
   getReviewsById: function(id) {
     const queryStr = `SELECT * FROM reviews WHERE property_id=${id}`;
     return this.queryDB(queryStr).then((data) => {
