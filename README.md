@@ -20,15 +20,15 @@
     - [1.3.1. API endpoints](#131-api-endpoints)
     - [1.3.2. Component](#132-component)
   - [1.4. Development Setup](#14-development-setup)
-    - [1.4.2. Cassandra setup](#142-cassandra-setup)
-    - [1.4.1. Postgres setup (Not primary)](#141-postgres-setup-not-primary)
+    - [1.4.1. Cassandra setup](#141-cassandra-setup)
+    - [1.4.2. Postgres setup (Not primary)](#142-postgres-setup-not-primary)
     - [1.4.3. React build setup](#143-react-build-setup)
   - [1.5. Log](#15-log)
     - [1.5.1. Development setup (+ Refactoring)](#151-development-setup--refactoring)
     - [1.5.2. Million Records (2 Tables of 10million)](#152-million-records-2-tables-of-10million)
     - [1.5.3. Cassandra: Second Database](#153-cassandra-second-database)
     - [1.5.4. Comparison](#154-comparison)
-    - [CRUD (Create) UI and autoincrementing with Cassandra](#crud-create-ui-and-autoincrementing-with-cassandra)
+    - [1.5.5. CRUD (Create) UI and autoincrementing with Cassandra](#155-crud-create-ui-and-autoincrementing-with-cassandra)
 
 <!-- /TOC -->
 ## 1.3. Usage
@@ -66,7 +66,7 @@ Postgres can be installed through homebrew.  For more information, see [postgres
 
 
 
-### 1.4.2. Cassandra setup
+### 1.4.1. Cassandra setup
 
 **cassandra**
 
@@ -97,7 +97,7 @@ $> npm run megaseed
 $> npm start
 ```
 
-### 1.4.1. Postgres setup (Not primary)
+### 1.4.2. Postgres setup (Not primary)
 
 **postgres:**
 
@@ -357,10 +357,10 @@ Overall psql was faster for insertion and pretty close read times after this tes
 
 ![time](https://i.snag.gy/cErtou.jpg)
 
-### CRUD (Create) UI and autoincrementing with Cassandra
+### 1.5.5. CRUD (Create) UI and autoincrementing with Cassandra
 
 
-![screenshot]http://g.recordit.co/r4hJOAUHhL.gif
+![screenshot](http://g.recordit.co/r4hJOAUHhL.gif)
 
 I chose to do CRUD operation Create as to not remove from the seeded records. As such I used the `POST /reviews/:id` endpoint. This included:
 
@@ -370,5 +370,5 @@ I chose to do CRUD operation Create as to not remove from the seeded records. As
 
 One challenging issue is because I chose postgresql, I didn't have the `AUTO INCREMENT` feature for the id. I ended up creating a new table called `counts` which stores how many reviews there are via a special `counter` type column. THis column does not allow for insertion and can only be updated by doing `update`:
 
-`await this.queryDB(`UPDATE counts SET count=count+1 WHERE table_name='reviews'`);`
+`await this.queryDB("UPDATE counts SET count=count+1 WHERE table_name='reviews'");`
 
