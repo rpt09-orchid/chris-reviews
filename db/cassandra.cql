@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS ratings;
 DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS counts;
 
 CREATE TABLE reviews (
   id int,
@@ -30,4 +31,3 @@ CREATE TABLE counts (
   PRIMARY KEY(table_name)
 );
 
- UPDATE counts set count=count+10000000 where table_name='reviews';

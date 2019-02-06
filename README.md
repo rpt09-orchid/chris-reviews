@@ -389,7 +389,7 @@ I chose to do CRUD operation Create as to not remove from the seeded records. As
 - validation error / success
 - automatic updating of reviews on page.
 
-One challenging issue is because I chose postgresql, I didn't have the `AUTO INCREMENT` feature for the id. I ended up creating a new table called `counts` which stores how many reviews there are via a special `counter` type column. THis column does not allow for insertion and can only be updated by doing `update`:
+One challenging issue is because I chose cassandra and not psql, I **didn't** have the `AUTO INCREMENT` feature for the id. I ended up creating a new table called `counts` which stores how many reviews there are via a special `counter` type column. Otherwise querying `count(*)` results in a complete tablescan and is not performant. Thus, this table stores the count in a single row and increments it on new reviews entries.  This column does not allow for insertion and can only be updated by doing `update`:
 
 `await this.queryDB("UPDATE counts SET count=count+1 WHERE table_name='reviews'");`
 
