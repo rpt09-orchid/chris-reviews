@@ -78,7 +78,7 @@ app.get('/reviews/:id(\\d+$)', async (req, res) => {
 });
 
 app.post('/reviews/:id', async (req, res) => {
-  const requiredAttributes = ['review_body', 'user_ratings', 'user_id'];
+  const requiredAttributes = ['review_body', 'user_ratings', 'property_id', 'user_id'];
   const requiredRatings = {
     'acc': 'Accuracy',
     'com': 'Communication',
@@ -90,8 +90,13 @@ app.post('/reviews/:id', async (req, res) => {
     return (req.body[key] === undefined || !req.body[key])
   });
   if (missingFields.length) {
-    res.sendErrorJSON('Missing required fields: ' + missingFields.join(', '));
-    return;
+    res.sendErrorJSON('Missing required fields: ' + missingFields.map((key) => {
+      return key.replace(/_\w/g, (val) => 
+        {
+          return ' ' + val.slice(1).toUpperCase();
+      }).replace(/^\w/, (val) => {
+        return val.toUpperCase();
+      })}).join(', '));
   } else {
     const missingRatings = Object.keys(requiredRatings).filter((key) => {
       return req.body.user_ratings[key] === undefined;
@@ -100,11 +105,16 @@ app.post('/reviews/:id', async (req, res) => {
       res.sendErrorJSON('Missing required rating fields: ' + 
       missingRatings.map((key) => {
         return requiredRatings[key];
-      })).join(', ');
+      }).join(', '));
       return;
     }
-    // const newReviews = await db.getReviewsById(id);
-    res.sendSuccessJSON(req.body);
+    try {
+      await db.createReview(req.body);
+      res.sendSuccessJSON(req.body);
+    } catch (e) {
+      res.sendErrorJSON(e.toString());
+    }
+  
   }
 });
  

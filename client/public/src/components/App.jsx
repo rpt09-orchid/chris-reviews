@@ -54,21 +54,24 @@ class App extends Component {
       path = '/1';
     }
 
-    this.setState({id: path.replace('/', '')});
-
-    axios.get(`${this.HOSTS.rooms}/users${path}`)
-      .then(res => res.data.data)
-      .then(res => {
-        this.setState({
-          activeUser:{ 
-            id: path.replace('/', ''),
-            name: res.user,
-            avatarUrl: res.avatar
-          }
+    this.setState({id: path.replace('/', '')}, () => {
+      axios.get(`${this.HOSTS.rooms}/users${path}`)
+        .then(res => res.data.data)
+        .then(res => {
+          this.setState({
+            activeUser:{ 
+              id: this.state.id,
+              name: res.user,
+              avatarUrl: res.avatar
+            }
+          });
         });
-      });
+      this.getReviews(this.state.id);
+    });
+  }
 
-    axios.get(`${this.HOSTS.reviews}/reviews${path}`)
+  getReviews(id) {
+    axios.get(`${this.HOSTS.reviews}/reviews/${id}`)
       .then(res => res.data)
       .then(res => {
         this.setState({ 
@@ -84,7 +87,8 @@ class App extends Component {
     axios.post(`${this.HOSTS.reviews}/reviews/${this.state.id}`, {
       review_body: this.state.reviewBody,
       user_id: this.state.activeUser.id,
-      user_ratings: this.state.userRatings
+      user_ratings: this.state.userRatings,
+      property_id: this.state.id
       
     }).then((resp) => {
       console.log(resp);
@@ -92,7 +96,7 @@ class App extends Component {
         this.setState({error: resp.data.error});
         return;
       } else {
-        console.log('yayy');
+        this.getReviews(this.state.id);
         this.setState({
             success: 'Review added!', 
             addReviewVisible: false, 

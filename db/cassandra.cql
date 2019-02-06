@@ -23,3 +23,11 @@ CREATE TABLE ratings (
   checkin int,
   value int
 );
+
+CREATE TABLE counts (
+  table_name text,
+  count counter,
+  PRIMARY KEY(table_name)
+);
+
+ UPDATE counts set count=count+10000000 where table_name='reviews';

@@ -20,14 +20,15 @@
     - [1.3.1. API endpoints](#131-api-endpoints)
     - [1.3.2. Component](#132-component)
   - [1.4. Development Setup](#14-development-setup)
-    - [1.4.1. Postgres setup](#141-postgres-setup)
     - [1.4.2. Cassandra setup](#142-cassandra-setup)
+    - [1.4.1. Postgres setup (Not primary)](#141-postgres-setup-not-primary)
     - [1.4.3. React build setup](#143-react-build-setup)
   - [1.5. Log](#15-log)
     - [1.5.1. Development setup (+ Refactoring)](#151-development-setup--refactoring)
     - [1.5.2. Million Records (2 Tables of 10million)](#152-million-records-2-tables-of-10million)
     - [1.5.3. Cassandra: Second Database](#153-cassandra-second-database)
     - [1.5.4. Comparison](#154-comparison)
+    - [CRUD (Create) UI and autoincrementing with Cassandra](#crud-create-ui-and-autoincrementing-with-cassandra)
 
 <!-- /TOC -->
 ## 1.3. Usage
@@ -54,7 +55,7 @@ This service uses the following dev stack:
  - Server: node / NPM
  - Deployment: ??
  - Client: react
- - DB: PostgreSQL (installed via brew)
+ - DB: Cassandra
  - Testing: jest
  - Important Libs:
    - faker.js
@@ -63,7 +64,40 @@ This service uses the following dev stack:
 Postgres can be installed through homebrew.  For more information, see [postgres install guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04)
 
 
-### 1.4.1. Postgres setup
+
+
+### 1.4.2. Cassandra setup
+
+**cassandra**
+
+For more indepth information check out [1.5.3. Cassandra: Second Database](#153-cassandra-second-database) Section in log.
+
+Inside `.env` place your DB Name credentials
+
+```
+CASSANDRA_DB_NAME=firebnbreviews
+```
+
+``` sh
+# latest python (if dont have)
+$> brew install python
+# cassandra shell
+$> pip install cql
+# start it up
+$> brew install cassandra
+$> brew services start cassandra
+# gointo shell, if error see next section about connection refused
+$> cqlsh
+# create and confirm creation of keyspace (keypsace is kind of similar to creating a database in sql)
+$ cqlsh> CREATE KEYSPACE firebnbreviews WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};
+$ cqlsh> DESC KEYSPACES
+# cassandra do.. 
+$> npm run megaseed
+# Excecute (load cassandra db)
+$> npm start
+```
+
+### 1.4.1. Postgres setup (Not primary)
 
 **postgres:**
 
@@ -98,47 +132,16 @@ $ (repl)> \dt; #to show all tables
 $ (repl)> \q; #to exit repl
 # seed  db,make sure you ahve your credentials in your .env
 # postgres do.. 
-$> npm run megaseed
+$> npm run megaseedPsql
 # to test
 $> npm test #synonymous with jest
 # To execute (load postgres db):
-$> npm start #should be running on 3003
+$> npm startPsql #should be running on 3003
 ```  
-
-### 1.4.2. Cassandra setup
-
-**cassandra**
-
-For more indepth information check out [1.5.3. Cassandra: Second Database](#153-cassandra-second-database) Section in log.
-
-Inside `.env` place your DB Name credentials
-
-```
-CASSANDRA_DB_NAME=firebnbreviews
-```
-
-``` sh
-# latest python (if dont have)
-$> brew install python
-# cassandra shell
-$> pip install cql
-# start it up
-$> brew install cassandra
-$> brew services start cassandra
-# gointo shell, if error see next section about connection refused
-$> cqlsh
-# create and confirm creation of keyspace (keypsace is kind of similar to creating a database in sql)
-$ cqlsh> CREATE KEYSPACE firebnbreviews WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};
-$ cqlsh> DESC KEYSPACES
-# cassandra do.. 
-$> npm run megaseedCassandra
-# Excecute (load cassandra db)
-$> npm start --db=cassandra
-```
 
 ### 1.4.3. React build setup
 
-**React buil**
+**React build**
 ``` sh
 # To build in react, go to client folder package.json:
 $> npm run start #(builds once to /dist)
@@ -353,3 +356,19 @@ Overall psql was faster for insertion and pretty close read times after this tes
 ![bulkload](https://i.snag.gy/PbKNq2.jpg)
 
 ![time](https://i.snag.gy/cErtou.jpg)
+
+### CRUD (Create) UI and autoincrementing with Cassandra
+
+
+![screenshot]http://g.recordit.co/r4hJOAUHhL.gif
+
+I chose to do CRUD operation Create as to not remove from the seeded records. As such I used the `POST /reviews/:id` endpoint. This included:
+
+- user form with interactive ratings hoverable states (lots of if else statements)
+- validation error / success
+- automatic updating of reviews on page.
+
+One challenging issue is because I chose postgresql, I didn't have the `AUTO INCREMENT` feature for the id. I ended up creating a new table called `counts` which stores how many reviews there are via a special `counter` type column. THis column does not allow for insertion and can only be updated by doing `update`:
+
+`await this.queryDB(`UPDATE counts SET count=count+1 WHERE table_name='reviews'`);`
+
