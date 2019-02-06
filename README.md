@@ -37,14 +37,35 @@ This service/ component is the reviews service, which consists of two main aspec
 In order to display the proper data to the user, the endpoints below are used:
 
 ### 1.3.1. API endpoints
-- `/reviews/:id` 
+- `GET /reviews/:id` 
   - returns all data (reviews, users, ratings)
-- `/reviews/:id?search=true&keyWords=word1,word2...` 
+- `POST /reviews/:id` 
+  - post a review to specified id (see below** for json data format)
+- `GET /reviews/:id?search=true&keyWords=word1,word2...` 
   - returns reviews with included keyWords
-- `/reviews/:id?search=false` 
+- `GET /reviews/:id?search=false` 
   - returns all reviews
-- `/ratings/:id` 
+- `GET /ratings/:id` 
   - returns average rating and number of reviews.  
+
+**Specified format should be JSONified string as follows:
+
+``` json
+{
+    "review_body": "This is the body text of review",
+    "user_id": "5",
+    "user_ratings": {
+        "acc": 2,
+        "com": 3,
+        "cle": 3,
+        "loc": 3,
+        "chk": 4.5,
+        "val": 3
+    },
+    "property_id": "5"
+}
+
+```
 
 ### 1.3.2. Component
 The Reviews component has the two main features (displaying reviews and allows searching).  Secondary features includes displaying a ...see more for text with 280 characters or greater, and pagination for quanities of reviews of greater than 7.  
