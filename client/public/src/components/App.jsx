@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import styles from '../styles/app.styles.css';
+import AddReview from './AddReview.jsx';
 import Reviews from './Reviews.jsx';
 import ReviewsHeader from './ReviewsHeader.jsx';
 import RatingsBox from './RatingsBox.jsx';
@@ -11,12 +12,27 @@ class App extends Component {
     super(props);
     this.state = {
       ratings: null,
+      id: null,
+      error: false,
       reviews: null,
       keyWords: [],
       totalReviews: null,
-      searchText: ''
+      searchText: '',
+      addReviewVisible: false,
+      refreshUserRatings: false,
+      reviewBody: '',
+      userRatings: {},
+      activeUser: {
+        id: 1,
+        name: '',
+        avatarUrl: 'https://s3-us-west-2.amazonaws.com/chris-firebnb/defaults/default.png'
+      }
     };
     this.handleState = this.handleState.bind(this);
+    this.onAddReviewbuttonClick = this.onAddReviewbuttonClick.bind(this);
+    this.onReviewBodyChange = this.onReviewBodyChange.bind(this);
+    this.onChangeRating = this.onChangeRating.bind(this);
+    this.onSubmission = this.onSubmission.bind(this);
     if (process.env.NODE_ENV === 'production') {
       this.HOSTS = {
         reviews: 'http://firebnb-reviews.8di9c2yryn.us-east-1.elasticbeanstalk.com',
@@ -28,8 +44,8 @@ class App extends Component {
         rooms: 'http://localhost:3001'
       }
     }
-  }
 
+  }
 
   componentDidMount() {
     let path = window.location.pathname;
@@ -37,7 +53,25 @@ class App extends Component {
     if (!path.match(/^\/[0-9]+/)) {
       path = '/1';
     }
-    axios.get(`${this.HOSTS.reviews}/reviews${path}`)
+
+    this.setState({id: path.replace('/', '')}, () => {
+      axios.get(`${this.HOSTS.rooms}/users${path}`)
+        .then(res => res.data.data)
+        .then(res => {
+          this.setState({
+            activeUser:{ 
+              id: this.state.id,
+              name: res.user,
+              avatarUrl: res.avatar
+            }
+          });
+        });
+      this.getReviews(this.state.id);
+    });
+  }
+
+  getReviews(id) {
+    axios.get(`${this.HOSTS.reviews}/reviews/${id}`)
       .then(res => res.data)
       .then(res => {
         this.setState({ 
@@ -46,6 +80,56 @@ class App extends Component {
           totalReviews: res.reviews.length
         });
       });
+  }
+
+  onSubmission() {
+    this.setState({error: false});
+    axios.post(`${this.HOSTS.reviews}/reviews/${this.state.id}`, {
+      review_body: this.state.reviewBody,
+      user_id: this.state.activeUser.id,
+      user_ratings: this.state.userRatings,
+      property_id: this.state.id
+      
+    }).then((resp) => {
+      console.log(resp);
+      if (resp.data && resp.data.error) {
+        this.setState({error: resp.data.error});
+        return;
+      } else {
+        this.getReviews(this.state.id);
+        this.setState({
+            success: 'Review added!', 
+            addReviewVisible: false, 
+            reviewBody: '',
+            userRatings: {}
+          }, () => {
+          setTimeout(() => {
+            this.setState({success: false});
+          }, 5000);
+        })
+      }
+    }).catch((error) => {
+      console.log('Error!', error);
+      this.setState({error: error});
+    });
+  }
+
+  onChangeRating(type, val) {
+    const newRatings = Object.assign({}, this.state.userRatings);
+    newRatings[type] = (val === this.state.userRatings[type]) ? 0 : val;
+    this.setState({userRatings: newRatings});
+  }
+
+  onReviewBodyChange(e) {
+    this.setState({
+      reviewBody: e.target.value
+    })
+  }
+
+  onAddReviewbuttonClick() {
+    this.setState({
+      addReviewVisible: !this.state.addReviewVisible
+    });
   }
 
   handleState(prop, newState) {
@@ -77,6 +161,19 @@ class App extends Component {
             searchText={this.state.searchText}
             handleState={this.handleState}/>
           { searchStatement }
+          <AddReview 
+            success={this.state.success}
+            error={this.state.error}
+            activeUser={this.state.activeUser}
+            addReviewVisible={this.state.addReviewVisible}
+            onReviewBodyChange={this.onReviewBodyChange}
+            onAddReviewbuttonClick={this.onAddReviewbuttonClick}
+            onChangeRating={this.onChangeRating}
+            onSubmission={this.onSubmission}
+            userRatings={this.state.userRatings}
+            refreshUserRatings={this.setState.refreshUserRatings}
+            userRatings={this.state.userRatings}
+          />
           <Reviews 
             HOSTS={this.HOSTS}
             reviews={this.state.reviews} 

@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS ratings;
 DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS counts;
 
 CREATE TABLE reviews (
   id int,
@@ -23,3 +24,10 @@ CREATE TABLE ratings (
   checkin int,
   value int
 );
+
+CREATE TABLE counts (
+  table_name text,
+  count counter,
+  PRIMARY KEY(table_name)
+);
+

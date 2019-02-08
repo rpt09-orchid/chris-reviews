@@ -18,7 +18,7 @@
 .searchII {
   display: block !important;
   width: 100% !important;
-  height: 34px;
+  /* height: 34px; */
   border-width: 1px !important;
   border-style: solid !important;
   border-radius: 4px !important;
@@ -33,15 +33,16 @@
 
 .searchIII {
   background-color: #ffffff !important;
-  margin-bottom: var(--unit, 8px) !important;
+  border-radius: 1rem;
+  /* margin-bottom: var(--unit, 8px) !important; */
   font-size: var(--font-form-element-small-font-size, 14px) !important;
-  line-height: var(--font-form-element-small-line-height, 22px) !important;
+  /* line-height: var(--font-form-element-small-line-height, 22px) !important; */
   letter-spacing: var(--font-form-element-small-letter-spacing, normal) !important;
   font-family: var(--font-form-element-small-font-family, Circular,-apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif) !important;
   text-transform: var(--font-form-element-small-text-transform, undefined) !important;
   color: #484848 !important;
   padding-top: var(--font-form-element-small-padding-top, undefined) !important;
-  padding-bottom: var(--font-form-element-small-padding-bottom, undefined) !important;
+  /* padding-bottom: var(--font-form-element-small-padding-bottom, undefined) !important; */
 }
 
 .searchSymContainer {

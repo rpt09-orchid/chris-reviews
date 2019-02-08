@@ -10,9 +10,9 @@ class Reply extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: null,
-      url: null,
-      readMore: false
+      readMore: false,
+      name: '',
+      url: 'https://s3-us-west-2.amazonaws.com/chris-firebnb/defaults/default.png'
     };
     this.handleClick = this.handleClick.bind(this);
   }
@@ -21,10 +21,12 @@ class Reply extends Component {
     axios.get(`${this.props.HOSTS.rooms}/users/${propertyId}`)
       .then(res => res.data.data)
       .then(res => {
-        this.setState({ 
-          name: res.user,
-          url: res.avatar
-        });
+        if (res.user) {
+          this.setState({ 
+            name: res.user,
+            url: res.avatar
+          });
+        }
       });
   }
 
@@ -141,7 +143,7 @@ class Review extends Component {
   }
 
   render() {
-    const { propertyId } = this.props.review;
+    const { property_id: propertyId } = this.props.review;
     const { name, avatarUrl } = this.props.review.user;
     const { date, review, reply, reply_date: replyDate } = this.props.review; 
 

@@ -7,21 +7,17 @@
   margin-left: 16px !important;
 }
 
-.starContainer {
-  color: var(--color-star-babu-highlight-color, #008489) !important;
-  display: inline-block !important;
-  font-size: 18px !important;
-  height: 18px !important;
-  margin-right: 6px !important;
-  width: 18px !important;
-}
-
 .star {
   height: 1em; 
-  width: 1em; 
-  display: block; 
+  width: .5em; 
+  display: inline-block;
   fill: currentcolor;
 }
+
+.star.flipped {
+  transform: scaleX(-1);
+}
+
 
 .halfStarContainer {
   color: var(--color-star-babu-highlight-color, #008489) !important;
@@ -35,20 +31,24 @@
 
 .greyStar {
   color: var(--color-star-blank-color, #D8D8D8) !important;
-  left: 0px !important;
-  position: absolute !important;
 }
 
-.greyStarContainer {
-  color: var(--color-star-blank-color, #D8D8D8) !important;
-  display: inline-block !important;
-  font-size: 18px !important;
-  height: 18px !important;
-  margin-right: 6px !important;
-  width: 18px !important;
+.removalStar {
+  color: var(--color-star-blank-color, #525252) !important;
+  cursor: pointer;
 }
 
-.halfStarGreen {
-  left: 0px !important;
-  position: absolute !important;
+.hoverStar {
+  color: var(--color-star-blank-color, #f4958e) !important;
+  cursor: pointer;
+}
+
+
+.greyMode {
+  opacity: 0.5;
+  color: var(--color-star-babu-highlight-color, #5b5b5b) !important;
+}
+
+.halfStarContainer.interactive {
+  color: var(--color-star-babu-highlight-color, #ea6a60) !important;
 }

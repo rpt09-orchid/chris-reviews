@@ -213,6 +213,11 @@ const doIterations = async (csv, iterations, tableName, records, numericalInfo) 
           });  
           await Promise.promisify(fs.unlink)(getAbsPath(`${tableName}.cql`));
           await createIndexes(tableName);
+          if (tableName === 'reviews') {
+            console.log(`setting counter table to ${TOTAL_RECORDS + 1}...`);
+            await dbQuery(`UPDATE counts set count=count+${TOTAL_RECORDS + 1} where table_name='reviews'`);
+            console.log(`done!`);
+          }
         }
         // cleanup
         for (let csvFileName of cassCsvStack) {

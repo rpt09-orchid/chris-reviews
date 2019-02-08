@@ -1,0 +1,115 @@
+.inputWrapper {
+  clear: both;
+  padding: 2rem 0;
+  font-family: Circular,-apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif !important;
+}
+
+.inputWrapper .textAreaWpr, 
+.inputWrapper .controls .right,
+.inputWrapper .mainInput {
+  animation: fadeIn 1s ease-in-out;
+}
+
+.inputWrapper .mainInput .errorBox {
+  margin: 1rem 0;
+  font-size: .8rem;
+  color: #ff0000;
+  padding: 1rem 0;
+}
+
+.inputWrapper .successBox {
+  margin: 1rem 0;
+  font-size: .8rem;
+  font-weight: bold;
+  color: #1fb86e;
+  padding: 1rem 0;
+}
+
+
+.inputWrapper .controls {
+  padding-bottom: 2rem;
+  margin-bottom: 2rem;
+}
+
+.inputWrapper .controls.active {
+  border-bottom: 1px solid #EBEBEB;
+}
+
+.inputWrapper .controls button {
+  background: #008489;
+  color: #fff;
+  padding: .5rem;
+  border: none;
+  margin-right: .5rem;
+  border-radius: .25rem;
+  outline: none;
+  cursor: pointer;
+
+}
+
+.inputWrapper .left, 
+.inputWrapper .right {
+  width: 50%;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.inputWrapper  .left {
+ text-align: left;
+}
+
+.inputWrapper .controls .right {
+  text-align: right;
+ }
+
+.inputWrapper .controls button.secondary {
+  background: #dedddd;
+  color: #fff;
+}
+
+.inputWrapper .controls button:hover {
+  background: #03bcc2;
+}
+
+.inputWrapper .controls .right .name {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: .8rem;
+  padding-right: .5rem;
+  color: #c0c0c0;
+}
+
+.inputWrapper .controls .right .avatar {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.inputWrapper .textAreaWpr {
+  margin: 1rem 0;
+  border-radius: 1rem;
+  border: none;
+  padding: 2rem;
+  background: #fafafa;
+  font-family: Circular,-apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif !important;
+}
+.inputWrapper .textAreaWpr textarea{
+  width: 100%;
+  height: 10rem;
+  resize: none;
+  border: none;
+  background: #fafafa;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
