@@ -33,14 +33,15 @@ class App extends Component {
     this.onReviewBodyChange = this.onReviewBodyChange.bind(this);
     this.onChangeRating = this.onChangeRating.bind(this);
     this.onSubmission = this.onSubmission.bind(this);
+    console.log('env:', process.env.NODE_ENV, 'docker:', process.env.IS_LOCAL_DOCKER);
     if (process.env.NODE_ENV === 'production') {
       this.HOSTS = {
-        reviews: 'http://firebnb-reviews.8di9c2yryn.us-east-1.elasticbeanstalk.com',
-        rooms: 'i dont know yet'
+        reviews: 'http://ec2-34-218-239-232.us-west-2.compute.amazonaws.com/',
+        rooms: 'http://ec2-13-52-103-229.us-west-1.compute.amazonaws.com/'
       }
     } else {
       this.HOSTS = {
-        reviews: 'http://localhost:3003',
+        reviews:  (process.env.IS_LOCAL_DOCKER) ? 'http://localhost' : 'http://localhost:3003',
         rooms: 'http://localhost:3001'
       }
     }

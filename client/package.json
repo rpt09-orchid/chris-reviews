@@ -6,6 +6,7 @@
     "start-client": "webpack -d --watch",
     "start": "webpack",
     "buildDev": "webpack -d",
+    "buildDevDocker": "webpack --env.IS_LOCAL_DOCKER=true -d",
     "build": "webpack -p"
   },
   "keywords": [],

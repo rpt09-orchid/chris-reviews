@@ -19,16 +19,17 @@
     "test": "jest --watchAll --verbose",
     "build": "cd client && npm run build && cd ../",
     "buildDev": "cd client && npm run buildDev && cd ../",
+    "buildDevDocker": "cd client && npm run buildDevDocker && cd ../",
     "buildWatch": "cd client && npm run start-client && cd ../",
     "dockerInit": "docker-compose up",
-    "dockerBuildWebLocal": "npm run build && docker-compose up web && npm run buildDev",
-    "dockerUp": "docker-compose up cassandra web",
+    "dockerBuildWebLocal": "npm run buildDevDocker && docker-compose build web && docker-compose up -d web && npm run buildDev",
+    "dockerUp": "docker-compose up -d cassandra web",
     "dockerPrune": "docker system prune",
     "loadENV": "EC2_URL=ec2-user@ec2-34-218-239-232.us-west-2.compute.amazonaws.com EC2_APP_PATH=/home/ec2-user/app PEM_FILE=~/.ssh/mine.pem",
     "connect": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-218-239-232.us-west-2.compute.amazonaws.com",
-    "copyToServer": "npm run build && scp -i \"${PEM_FILE}\" .env ${EC2_URL}:${EC2_APP_PATH}/.env && rsync --include .git --exclude-from=\"$(git -C . ls-files --exclude-standard -oi --directory >.git/ignores.tmp && echo .git/ignores.tmp)\" -rave \"ssh -i ${PEM_FILE}\" . ec2-user@ec2-54-172-80-40.compute-1.amazonaws.com:/home/ec2-user/app && npm run buildDev",
-    "deployWeb": "npm run loadENV && npm run copyToServer && ssh -i ${PEM_FILE} ${EC2_URL} 'cd ${EC2_APP_PATH} && docker-compose up web'",
-    "deployInit": "npm run loadENV && npm run copyToServer && ssh -i ${PEM_FILE} ${EC2_URL} 'cd ${EC2_APP_PATH} && docker-compose up'"
+    "copyToServer": "npm run build && scp -i \"~/.ssh/mine.pem\" .env ec2-user@ec2-34-218-239-232.us-west-2.compute.amazonaws.com:/home/ec2-user/app/.env && rsync --include .git --exclude-from=\"$(git -C . ls-files --exclude-standard -oi --directory >.git/ignores.tmp && echo .git/ignores.tmp)\" -rave \"ssh -i \"~/.ssh/mine.pem\" . ec2-user@ec2-34-218-239-232.us-west-2.compute.amazonaws.com:/home/ec2-user/app && npm run buildDev",
+    "deployWeb": "npm run loadENV && npm run copyToServer && ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-218-239-232.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app && docker-compose up -d web'",
+    "deployInit": "npm run loadENV && npm run copyToServer && ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-218-239-232.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app && docker-compose up -d '"
   },
   "dependencies": {
     "aws-sdk": "^2.369.0",
