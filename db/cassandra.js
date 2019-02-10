@@ -2,10 +2,18 @@ require('dotenv').config();
 const cassandra = require('cassandra-driver');
 const axios = require('axios');
 
+let DB_HOST;
+
+if (process.env.NODE_ENV === 'production') {
+  DB_HOST = 'cassandra';
+} else {
+  DB_HOST = '127.0.0.1';
+}
+ 
 
 // Connecting DB
 const client = new cassandra.Client({
-  contactPoints: ['127.0.0.1'], 
+  contactPoints: [DB_HOST], 
   keyspace: process.env.CASSANDRA_DB_NAME,
   localDataCenter: 'datacenter1'
 });

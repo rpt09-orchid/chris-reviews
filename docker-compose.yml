@@ -1,0 +1,33 @@
+version: '3'
+services:
+  seed-db: 
+    build: 
+      context: ./dummydata
+    command:  /bin/bash -c "sleep 60 && ls . && node megaseed.js --db=cassandra"
+    networks:
+      - mynetwork
+    depends_on:
+      - cassandra
+  web:
+    build: .
+    ports:
+     - "80:3003"
+    command: /bin/bash -c "sleep 60 && npm start"
+    networks:
+      - mynetwork
+    depends_on:
+      - cassandra
+  cassandra:
+    image: "cassandra:3.11"
+    hostname: cassandra
+    # uncomment if seeding as cassandra is noisy
+    # logging:
+    #   driver: none
+    networks:
+      - mynetwork
+    volumes:
+      - ~/docker_cassandra_data:/var/lib/cassandra
+      - ./dummyData/cassandra_config/cassandra.yaml:/etc/cassandra/cassandra.yaml
+networks:
+  mynetwork:
+    driver: bridge

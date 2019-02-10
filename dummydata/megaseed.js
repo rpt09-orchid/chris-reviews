@@ -7,9 +7,16 @@ const json2csv = require('json2csv').parse;
 const Promise = require('bluebird');
 const exec = Promise.promisify(require('child_process').exec);
 const _ = require('lodash');
-require('dotenv').config({path: path.resolve(__dirname + '/../.env')});
+require('dotenv').config({path: path.resolve(__dirname + '/.env')});
  
 let client;
+let DB_HOST;
+
+if (process.env.IS_DOCKER) {
+  DB_HOST = 'cassandra';
+} else {
+  DB_HOST = '127.0.0.1';
+}
  
 if (DB_TYPE === 'psql') {
  
@@ -28,8 +35,7 @@ if (DB_TYPE === 'psql') {
  
   cassandra = require('cassandra-driver');
   client = new cassandra.Client({
-    contactPoints: ['127.0.0.1'], 
-    keyspace: process.env.CASSANDRA_DB_NAME,
+    contactPoints: [DB_HOST], 
     localDataCenter: 'datacenter1'
   });
  
@@ -77,8 +83,13 @@ const dbQuery = (cmd, args) => {
 }
  
 const outputProgress = ({tableName, startTime, startIndex, recordAdjustment=0, endIndex,numericalInfo, maxOutAt=100, iterations, text=''}) => {
+  try {
   process.stdout.clearLine();
   process.stdout.cursorTo(0);
+  } catch(e) {
+    // print line instead
+    console.log('\n');
+  }
   const BAR_SIZE = 20;
   const progBar = [...Array(BAR_SIZE).keys()].map((bar) => {
       return (bar < (Math.floor(startIndex / (iterations - 1) * BAR_SIZE))) ? '\x1b[46m ' : '\x1b[47m '
@@ -167,7 +178,7 @@ const doIterations = async (csv, iterations, tableName, records, numericalInfo) 
  
         const doCOPY = async (precommands='') => {
           // execute
-          const originalCommand = `${precommands} cqlsh -f '${__dirname + '/' + tableName}.cql'`;
+          const originalCommand = `${precommands} cqlsh --cqlversion=3.4.4 ${DB_HOST} 9042 -f '${__dirname + tableName}.cql'`;
           // const newCommand = `cassandra-loader -f '${__dirname}/csvs' -host localhost -skipRows 1 -schema "${ process.env.CASSANDRA_DB_NAME}.${tableName}(${Object.keys(records[0]).join(',')})";`;
           await exec(originalCommand).catch(async (error) => {
             if (cassCurrentErrorTry < cassMaxTries) {
@@ -259,7 +270,7 @@ const doIterations = async (csv, iterations, tableName, records, numericalInfo) 
 };
  
 const createTables = () => {
-  const filePath = (DB_TYPE === 'cassandra') ? '/../db/cassandra.cql' : '/../db/postgres.sql';
+  const filePath = (DB_TYPE === 'cassandra') ? 'cassandra.cql' : 'postgres.sql';
   return new Promise((resolve, reject) => {
     fs.readFile(path.resolve(__dirname + filePath), (err, data) => {
       if (err) {

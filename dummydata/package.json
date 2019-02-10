@@ -1,0 +1,51 @@
+{
+  "name": "reviews",
+  "version": "1.0.0",
+  "description": "service for reviews",
+  "author": "kent ogisu",
+  "license": "HR",
+  "engines": {
+    "node": ">=10.13.0"
+  },
+  "scripts": {
+    "start": "node server/index.js --db=cassandra",
+    "start-dev": "nodemon server/index.js --db=cassandra",
+    "startPsql": "node server/index.js",
+    "startCassandra": "node server/index.js --db=cassandra",
+    "seed-database": "node ./dummydata/seed.js",
+    "megaseed": "node ./dummydata/megaseed.js --db=cassandra",
+    "megaseedPsql": "node ./dummydata/megaseed.js",
+    "megaseedCassandra": "node ./dummydata/megaseed.js --db=cassandra",
+    "test": "jest --watchAll --verbose",
+    "buildWatch": "cd client && npm run start-client"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.369.0",
+    "axios": "^0.18.0",
+    "bluebird": "^3.5.3",
+    "body-parser": "^1.18.3",
+    "cassandra-driver": "^4.0.0",
+    "cors": "^2.8.5",
+    "debug": "^4.1.0",
+    "dotenv": "^6.1.0",
+    "express": "^4.16.4",
+    "faker": "^4.1.0",
+    "fs": "0.0.1-security",
+    "jest": "^23.6.0",
+    "lodash": "^4.17.11",
+    "morgan": "^1.9.1",
+    "path": "^0.12.7",
+    "pg": "^7.6.1",
+    "pg-promise": "^8.5.2",
+    "supertest": "^3.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.12.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-hackreactor": "git://github.com/reactorcore/eslint-config-hackreactor",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-react": "^7.12.3",
+    "json2csv": "^4.3.3"
+  }
+}

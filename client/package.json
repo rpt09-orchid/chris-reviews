@@ -5,6 +5,7 @@
   "scripts": {
     "start-client": "webpack -d --watch",
     "start": "webpack",
+    "buildDev": "webpack -d",
     "build": "webpack -p"
   },
   "keywords": [],
