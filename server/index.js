@@ -1,4 +1,4 @@
-require('../newrelic');
+require('newrelic');
 const app = require('./app.js');
 //setup env variavles
 require('dotenv').config();
