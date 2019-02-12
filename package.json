@@ -31,11 +31,11 @@
     "copyToServer": "npm run build && scp -i \"~/.ssh/mine.pem\" .env ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com:/home/ec2-user/app/.env && scp -i \"~/.ssh/mine.pem\" .env ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com:/home/ec2-user/app/dummydata/.env && rsync --include .git --exclude-from=\"$(git -C . ls-files --exclude-standard -oi --directory >.git/ignores.tmp && echo .git/ignores.tmp)\" -rave \"ssh -i ~/.ssh/mine.pem\" . ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com:/home/ec2-user/app && npm run buildDev",
     "deployWeb": "npm run copyToServer && ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app && docker-compose build web && docker-compose up -d web && '",
     "deployInit": "npm run copyToServer && ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker-compose build && docker-compose up -d  docker-compose logs --tail 500 --follow web'",
-    "restartRemoteDB":  "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker-compose restart cassandra && docker-compose logs --tail 500  --follow cassandra'",
-    "webLogs":  "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker-compose logs --follow web'",
-    "dbLogs":  "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker-compose logs --tail 500  --follow cassandra'",
-    "dockerRemoteStats":  "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker stats'",
-    "dockerRemoteDBCompactionStats":  "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker-compose exec -it cassandra bash nodetool compactionstats'"
+    "restartRemoteDB": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker-compose restart cassandra && docker-compose logs --tail 500  --follow cassandra'",
+    "webLogs": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker-compose logs --follow web'",
+    "dbLogs": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker-compose logs --tail 500  --follow cassandra'",
+    "dockerRemoteStats": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker stats'",
+    "dockerRemoteDBCompactionStats": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-35-166-43-127.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker-compose exec -it cassandra bash nodetool compactionstats'"
   },
   "dependencies": {
     "aws-sdk": "^2.369.0",
@@ -52,6 +52,7 @@
     "jest": "^23.6.0",
     "lodash": "^4.17.11",
     "morgan": "^1.9.1",
+    "newrelic": "^5.3.0",
     "path": "^0.12.7",
     "pg": "^7.6.1",
     "pg-promise": "^8.5.2",
