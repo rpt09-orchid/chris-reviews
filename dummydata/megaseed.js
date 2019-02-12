@@ -186,8 +186,8 @@ const doIterations = async (csv, iterations, tableName, records, numericalInfo) 
               cassCurrentErrorTry++;
               console.log('');
               console.log(error);
-              console.error(`Uh oh an error occurred...will try again in 10 seconds (${cassCurrentErrorTry}/${cassMaxTries} tries)...`)
-              await new Promise(resolve => setTimeout(resolve, 10000));
+              console.error(`Uh oh an error occurred...will try again in 60 seconds (${cassCurrentErrorTry}/${cassMaxTries} tries)...`)
+              await new Promise(resolve => setTimeout(resolve, 60000));
               await doCOPY('');
               return;
  

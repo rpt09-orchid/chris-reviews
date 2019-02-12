@@ -36,8 +36,8 @@ class App extends Component {
     console.log('env:', process.env.NODE_ENV, 'docker:', process.env.IS_LOCAL_DOCKER);
     if (process.env.NODE_ENV === 'production') {
       this.HOSTS = {
-        reviews: 'http://ec2-34-218-239-232.us-west-2.compute.amazonaws.com/',
-        rooms: 'http://ec2-13-52-103-229.us-west-1.compute.amazonaws.com/'
+        reviews: 'http://ec2-35-166-43-127.us-west-2.compute.amazonaws.com',
+        rooms: 'http://ec2-13-52-103-229.us-west-1.compute.amazonaws.com'
       }
     } else {
       this.HOSTS = {

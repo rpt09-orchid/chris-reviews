@@ -2,7 +2,7 @@ CREATE KEYSPACE IF NOT EXISTS firebnbreviews WITH replication = {'class':'Simple
 USE firebnbreviews;
 DROP TABLE IF EXISTS ratings;
 DROP TABLE IF EXISTS reviews;
-DROP INDEX IF EXITS property_idx;
+DROP INDEX IF EXISTS property_idx;
 DROP TABLE IF EXISTS counts;
 
 CREATE TABLE reviews (
