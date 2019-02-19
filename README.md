@@ -462,7 +462,7 @@ Cassandra / java caused a LOT of memory issues, so scaling to a `t2.small` and l
 
 Secondary indexing on the needed `property_id` column took 9 hours, but without it querying was impossible. Note: After initial seeding, new nodes during the boostrap process do not take long at all, an average of 6 minutes. 
 
-After resolving these issues, the signle ec2 instance was up and running! It looked like this.
+After resolving these issues, the single ec2 instance was up and running! It looked like this.
 
 ![singleInstance](https://i.imgur.com/clWoaYn.png)
 
