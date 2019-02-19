@@ -639,6 +639,16 @@ services:
       - ./otherServers/node2/cassandra-rackdc.properties:/etc/cassandra/cassandra-rackdc.properties
 ```
 
+Then after launching, going into the cqlsh and changing the network policy by:
+
+``` sh
+# see your current policy
+cqlsh $>  SELECT * FROM system_schema.keyspaces;
+# change number where N = amount of nodes in your cluster
+cqlsh $>  ALTER KEYSPACE firebnbreviews WITH REPLICATION =  {'class' : 'NetworkTopologyStrategy', 'dc1' : N};
+```
+
+Finally, add the ip to your nginx upstream list.
 
 
 ### 1.5.12. Final optimized results
