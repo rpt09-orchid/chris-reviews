@@ -29,13 +29,13 @@
     - [1.5.3. Cassandra: Second Database](#153-cassandra-second-database)
     - [1.5.4. Comparison](#154-comparison)
     - [1.5.5. CRUD (Create) UI and autoincrementing with Cassandra](#155-crud-create-ui-and-autoincrementing-with-cassandra)
-    - [Deployment Docker-compose](#deployment-docker-compose)
-    - [Local Load testing (Artillery)](#local-load-testing-artillery)
-    - [Deployed Load testing (Loader.io)](#deployed-load-testing-loaderio)
-    - [Analysis  (new relic)](#analysis--new-relic)
-    - [Horizontally scale](#horizontally-scale)
-  - [Nginx Load balancer + multi instance](#nginx-load-balancer--multi-instance)
-  - [Final optimized results](#final-optimized-results)
+    - [1.5.6. Deployment Docker-compose](#156-deployment-docker-compose)
+    - [1.5.7. Local Load testing (Artillery)](#157-local-load-testing-artillery)
+    - [1.5.8. Deployed Load testing (Loader.io)](#158-deployed-load-testing-loaderio)
+    - [1.5.9. Analysis  (new relic)](#159-analysis--new-relic)
+    - [1.5.10. Horizontally scale](#1510-horizontally-scale)
+    - [1.5.11. Nginx Load balancer + multi instance](#1511-nginx-load-balancer--multi-instance)
+    - [1.5.12. Final optimized results](#1512-final-optimized-results)
 
 <!-- /TOC -->
 ## 1.3. Usage
@@ -411,7 +411,7 @@ One challenging issue is because I chose cassandra and not psql, I **didn't** ha
 
 `await this.queryDB("UPDATE counts SET count=count+1 WHERE table_name='reviews'");`
 
-### Deployment Docker-compose
+### 1.5.6. Deployment Docker-compose
 
 So I decided to use `docker compose` to deploy my db and web. I ended up deciding on  3 seperate images: 
 
@@ -520,7 +520,7 @@ services:
 ```
 
 
-### Local Load testing (Artillery)
+### 1.5.7. Local Load testing (Artillery)
 
 Local testing with artillery on my macbook pro was pretty successful up until the 1000rps. 
 
@@ -529,7 +529,7 @@ Local testing with artillery on my macbook pro was pretty successful up until th
 | Local (Artillery) | `34ms` Latency / `0%` errors | `28.5ms` Latency / `0%` errors | `156ms` Latency / `0%` errors | `4,000ms` Latency / `70%` error |
 
 
-### Deployed Load testing (Loader.io)
+### 1.5.8. Deployed Load testing (Loader.io)
 
 
 
@@ -542,14 +542,14 @@ As you can see here while 1rps + 10rps did decent, 100rps + 1000rps have signifi
 
 ![loaderio](https://i.imgur.com/v7dKdNxr.png)
 
-### Analysis  (new relic)
+### 1.5.9. Analysis  (new relic)
 
 ![newrelic](https://i.imgur.com/ShGSbCnr.png)
 
 
 So looking at the new relic breakdown, we can see that mainly cassandra is taking up a majority of the latency increase. 
 
-### Horizontally scale
+### 1.5.10. Horizontally scale
 
 So my plan was to horizontally scale by adding a new cassandra node. The benefit of using cassandra, is that once you have a `seed` node, the new one will connect to the `ring` and autobootstrap its data
 
@@ -571,12 +571,12 @@ Awesome so now I tried to run my loader tests again, but unfortunately there was
 | Loader.io (single instance) | `100ms` Latency / `0%` errors | `120ms` Latency / `0%` errors | `1280ms` Latency / `0%` errors | `8000ms` Latency / `60%` errors |
 | Loader.io (single instance + extra cassandra node) | `100ms` Latency / `0%` errors | `120ms` Latency / `0%` errors | `1280ms` Latency / `0%` errors | `8000ms` Latency / `60%` errors |
 
-## Nginx Load balancer + multi instance
+### 1.5.11. Nginx Load balancer + multi instance
 
 So I changed the architecture diagram a little bit where on top of everything is an nginx load balancer, and then underneath is an ec2 instance containing 1) independent node (web), and 2) cassandra (node). Now the cassandra node is not necessarilly only queried by the the web app it shares an instance with, but rather joins the larger cassandra ring. This architecture greatly improved the performance!
 
 You can see these additional nodes in the folder  [otherServers](/otherServers). 
-
+It basically has cassandra /load balancer config, and package.json just for npm scripts.
 ```
 .
 ├── loadBalancer
@@ -639,7 +639,7 @@ services:
 ![new architecture diagram](https://i.imgur.com/p9HY91Yr.png)
 
 
-## Final optimized results
+### 1.5.12. Final optimized results
 
 
 As you can see below I was able to reduce `100rps` from `1.2s` to `91ms` with more nodes. And I can even get `1000rps` in just a little over `2 seconds`. Each node took roughly about 10 min to launch (that includes bootstrap / ready to use time). And since no instance is centralized, they can be added and removed at will. for the higher rps, it seemed to platough after a while so other optimizations that might be able to be done
