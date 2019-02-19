@@ -415,6 +415,8 @@ One challenging issue is because I chose cassandra and not psql, I **didn't** ha
 
 So I decided to use `docker compose` to deploy my db and web. I ended up deciding on  3 seperate images: 
 
+![singleInstance](https://i.imgur.com/clWoaYn.png)
+
   - `web` (node app)
   - `cassandra` (database , based off of cassandra image)
   - `seed-db` (seed app, which based off of node image, but installs cassandra and cqlsh for seeding)
@@ -464,7 +466,6 @@ Secondary indexing on the needed `property_id` column took 9 hours, but without 
 
 After resolving these issues, the single ec2 instance was up and running! It looked like this.
 
-![singleInstance](https://i.imgur.com/clWoaYn.png)
 
 My final docker compose was the following:
 
