@@ -1,4 +1,4 @@
-CREATE KEYSPACE IF NOT EXISTS firebnbreviews WITH replication = {'class':'SimpleStrategy', 'replication_factor' : 1};
+CREATE KEYSPACE firebnbreviews WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'dc1' : 1 };
 USE firebnbreviews;
 DROP TABLE IF EXISTS ratings;
 DROP TABLE IF EXISTS reviews;

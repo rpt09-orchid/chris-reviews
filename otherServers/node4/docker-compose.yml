@@ -1,32 +1,23 @@
 version: '2'
 services:
-  seed-db: 
-    build: 
-      context: ./dummydata
-    command:  /bin/bash -c "sleep 60 && node megaseed.js --db=cassandra"
-    network_mode: host
-    depends_on:
-      - cassandra
-    # mem_limit: 512M
-    # cpu_quota: 50000
   web:
     build: .
+    network_mode: host
     ports:
      - "80:3003"
     command: /bin/bash -c "sleep 60 && npm start"
-    network_mode: host
     depends_on:
       - cassandra
-    mem_limit: 512M
-
+    # mem_limit: 512M
   cassandra:
     image: "cassandra:3.11"
+    network_mode: host
     environment:
       - "MAX_HEAP_SIZE=512M"
       - "HEAP_NEWSIZE=256M"
       - CASSANDRA_SEEDS=35.166.43.127
       - CASSANDRA_LISTEN_ADDRESS=auto
-      - CASSANDRA_BROADCAST_ADDRESS=35.166.43.127
+      - CASSANDRA_BROADCAST_ADDRESS=52.24.77.126
       - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
     # mem_limit: 1024M
     # cpu_quota: 50000
@@ -37,10 +28,7 @@ services:
       - "7001:7001"
       - "7199:7199"
     restart: always
-    # uncomment if seeding as cassandra is noisy
-    # logging:
-    #   driver: none
-    network_mode: host
     volumes:
       - ~/docker_cassandra_data:/var/lib/cassandra
-      - ./dummydata/cassandra_config/cassandra.yaml:/etc/cassandra/cassandra.yaml
+      - ./otherServers/node2/cassandra.yaml:/etc/cassandra/cassandra.yaml
+      - ./otherServers/node2/cassandra-rackdc.properties:/etc/cassandra/cassandra-rackdc.properties

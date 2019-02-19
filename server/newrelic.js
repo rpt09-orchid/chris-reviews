@@ -1,6 +1,8 @@
 
 'use strict';
 require('dotenv').config();
+console.log('new relic key is: ', process.env.NEW_RELIC_LICENSE_KEY);
+console.log('new relic app name is: ', process.env.NEW_RELIC_APP_NAME);
 /**
  * New Relic agent configuration.
  *
@@ -11,11 +13,11 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name: ['Firebnb-reviews'],
+  app_name: [process.env.NEW_RELIC_APP_NAME],
   /**
    * Your New Relic license key.
    */
-  license_key: 'process.env.NEW_RELIC_LICENSE_KEY,'
+  license_key: process.env.NEW_RELIC_LICENSE_KEY,
   logging: {
     /**
      * Level at which to log. 'trace' is most useful to New Relic when diagnosing

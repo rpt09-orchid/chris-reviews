@@ -1,0 +1,38 @@
+config:
+  target: 'http://localhost:3003'
+  phases:
+    # - duration: 60
+    #   arrivalCount: 60
+    #   name: "1 rps"
+    # - duration: 60
+    #   arrivalCount: 600
+    #   name: "10 rps"
+    # - duration: 60
+    #   arrivalCount: 6000
+      # name: "100 rps"
+    - duration: 60
+      arrivalCount: 60000
+      name: "1000 rps"
+  config:
+  payload:
+    path: "mockdata.csv"
+    fields:
+      - "review_body"
+      - "date"
+scenarios:
+  - flow:
+    # - get:
+    #     url: "/reviews/{{$randomNumber(9000000,10000000)}}"
+    - post:
+        url: "/reviews/{{$randomNumber(9000000,10000000)}}"
+        json:
+          user_id: "{{$randomNumber(1,1000)}}"
+          review_body: "{{ review_body }}"
+          property_id: "{{$randomNumber(9000000,10000000)}}"
+          user_ratings:
+              acc: "{{$randomNumber(1,5)}}"
+              com: "{{$randomNumber(1,5)}}"
+              cle: "{{$randomNumber(1,5)}}"
+              loc: "{{$randomNumber(1,5)}}"
+              chk: "{{$randomNumber(1,5)}}"
+              val: "{{$randomNumber(1,5)}}"

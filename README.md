@@ -29,6 +29,13 @@
     - [1.5.3. Cassandra: Second Database](#153-cassandra-second-database)
     - [1.5.4. Comparison](#154-comparison)
     - [1.5.5. CRUD (Create) UI and autoincrementing with Cassandra](#155-crud-create-ui-and-autoincrementing-with-cassandra)
+    - [Deployment Docker-compose](#deployment-docker-compose)
+    - [Local Load testing (Artillery)](#local-load-testing-artillery)
+    - [Deployed Load testing (Loader.io)](#deployed-load-testing-loaderio)
+    - [Analysis  (new relic)](#analysis--new-relic)
+    - [Horizontally scale](#horizontally-scale)
+  - [Nginx Load balancer + multi instance](#nginx-load-balancer--multi-instance)
+  - [Final optimized results](#final-optimized-results)
 
 <!-- /TOC -->
 ## 1.3. Usage
@@ -74,7 +81,7 @@ The Reviews component has the two main features (displaying reviews and allows s
 This service uses the following dev stack:
 
  - Server: node / NPM
- - Deployment: ??
+ - Deployment: ec2 / docker / docker-compose
  - Client: react
  - DB: Cassandra
  - Testing: jest
@@ -93,10 +100,21 @@ Postgres can be installed through homebrew.  For more information, see [postgres
 
 For more indepth information check out [1.5.3. Cassandra: Second Database](#153-cassandra-second-database) Section in log.
 
-Inside `.env` place your DB Name credentials
+Inside `.env` + also `.env.production`, place your DB Name credentials for each environmnent. 
 
 ```
+HOST=localhost
+PORT=3003 (80 in production)
+DB_NAME=firebnb-reviews
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=
+DB_PASS=
+DATACENTER=dc1
+NETWORK_MODE=host
 CASSANDRA_DB_NAME=firebnbreviews
+NEW_RELIC_APP_NAME=[name]
+NEW_RELIC_LICENSE_KEY=[hash]
 ```
 
 ``` sh
@@ -393,3 +411,256 @@ One challenging issue is because I chose cassandra and not psql, I **didn't** ha
 
 `await this.queryDB("UPDATE counts SET count=count+1 WHERE table_name='reviews'");`
 
+### Deployment Docker-compose
+
+So I decided to use `docker compose` to deploy my db and web. I ended up deciding on  3 seperate images: 
+
+  - `web` (node app)
+  - `cassandra` (database , based off of cassandra image)
+  - `seed-db` (seed app, which based off of node image, but installs cassandra and cqlsh for seeding)
+
+The purpose of the web and cassandra should be obvious, kept seperate so i can update / fiddle with them independently. The third one `seed-db` was because this container was only needed at init, and after finishing could drop off, and because the data is persistent it wouldn't be needed unless the data is cleared!
+
+
+**Useful Commands**
+
+Similar to docker cli, but a little bit easier since the container ids don't need to be addressed, and instead are called by service name, docker-compose commands we're heavily used. Some useful commands for working with docker-compose were:
+
+``` sh
+- useful commands
+# remove dangling unused containers / images
+$> docker system prune
+# if you've already built / done up before and then made changes, you'll want to run build
+$> docker-compose build [service1 service2]
+# start all services up in detached	mode, ie in the background	
+$> docker-compose up -d  [service1 service2]
+# follow logs for a specific containe, and start at last 500 linesr
+$>  docker-compose logs --follow --tail 500 [service1 service2]
+# get into a docker iamge
+$> docker-compose exec [service1] bash
+# see how much memory , cpu each docker container is taking up
+$> docker stats
+```
+*network*
+
+  The beauty of docker compose is the fact that it auto creates a bridge network between containers giving them a host name for each containe defaulting to the name of that service ...so web  could be available at `http://web` and 
+  a mongo service could be available at mongo://mongo and if you had a Cassandra service named `db` its accessible at `db:9042`. This was the 'aha' moment for me, in understanding how the containers communicate with one another.
+
+**volumes**
+
+THe other important element was use of volumes, I wanted to make sure the data persisted so I used docker-compose's volumes to make this happen as well as transfer over settings that needed to change for cassandra to not time out during seeding. SO this resulted in the following:
+``` yaml
+# store cassandra docker files at user roots docker_cassandra_data folder
+- ~/docker_cassandra_data:/var/lib/cassandra
+# use the current folder's yaml file as the config!
+- ./cassandra.yaml:/etc/cassandra/cassandra.yaml
+```
+
+**Difficulties (Memory + Secondary Index time)**
+
+Cassandra / java caused a LOT of memory issues, so scaling to a `t2.small` and larger volume (`8gb -> 12-24gb`) was necessary, especially for the seeding process!
+
+Secondary indexing on the needed `property_id` column took 9 hours, but without it querying was impossible. Note: After initial seeding, new nodes during the boostrap process do not take long at all, an average of 6 minutes. 
+
+After resolving these issues, the signle ec2 instance was up and running! It looked like this.
+
+![singleInstance](https://i.imgur.com/clWoaYn.png)
+
+My final docker compose was the following:
+
+
+```yml
+version: '2'
+services:
+  seed-db: 
+    build: 
+      context: ./dummydata
+    command:  /bin/bash -c "sleep 60 && node megaseed.js --db=cassandra"
+    network_mode: host
+    depends_on:
+      - cassandra
+    # mem_limit: 512M
+    # cpu_quota: 50000
+  web:
+    build: .
+    ports:
+     - "80:3003"
+    command: /bin/bash -c "sleep 60 && npm start"
+    network_mode: host
+    depends_on:
+      - cassandra
+    mem_limit: 512M
+
+  cassandra:
+    image: "cassandra:3.11"
+    environment:
+      - "MAX_HEAP_SIZE=512M"
+      - "HEAP_NEWSIZE=256M"
+      - CASSANDRA_SEEDS=35.166.43.127
+      - CASSANDRA_LISTEN_ADDRESS=auto
+      - CASSANDRA_BROADCAST_ADDRESS=35.166.43.127
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+    # mem_limit: 1024M
+    # cpu_quota: 50000
+    ports:
+      - "9042:9042"
+      - "9160:9160"
+      - "7000:7000"
+      - "7001:7001"
+      - "7199:7199"
+    restart: always
+    # uncomment if seeding as cassandra is noisy
+    # logging:
+    #   driver: none
+    network_mode: host
+    volumes:
+      - ~/docker_cassandra_data:/var/lib/cassandra
+      - ./dummydata/cassandra_config/cassandra.yaml:/etc/cassandra/cassandra.yaml
+
+```
+
+
+### Local Load testing (Artillery)
+
+Local testing with artillery on my macbook pro was pretty successful up until the 1000rps. 
+
+|                   | 1rps                     | 10rps                      | 100rps                    | 1000rps                     |
+|-------------------|--------------------------|----------------------------|---------------------------|-----------------------------|
+| Local (Artillery) | `34ms` Latency / `0%` errors | `28.5ms` Latency / `0%` errors | `156ms` Latency / `0%` errors | `4,000ms` Latency / `70%` error |
+
+
+### Deployed Load testing (Loader.io)
+
+
+
+|                             | 1rps                      | 10rps                     | 100rps                     | 1000rps                       |
+|-----------------------------|---------------------------|---------------------------|----------------------------|-------------------------------|
+| Loader.io (single instance) | `100ms` Latency / `0%` errors | `120ms` Latency / `0%` errors | `1280ms` Latency / `0%` errors | `8000ms` Latency / `60%` errors |
+
+
+As you can see here while 1rps + 10rps did decent, 100rps + 1000rps have significant latency increases and 1000 almost immediately dropped majority of results / failed completely.
+
+![loaderio](https://i.imgur.com/v7dKdNxr.png)
+
+### Analysis  (new relic)
+
+![newrelic](https://i.imgur.com/ShGSbCnr.png)
+
+
+So looking at the new relic breakdown, we can see that mainly cassandra is taking up a majority of the latency increase. 
+
+### Horizontally scale
+
+So my plan was to horizontally scale by adding a new cassandra node. The benefit of using cassandra, is that once you have a `seed` node, the new one will connect to the `ring` and autobootstrap its data
+
+This makes it really easy to add new resources. SO what I ended up doing was add one new node.
+
+Conceptually adding a node is easy as duplicating a `package.json` and `docker-comnpose.yml`, which I just had it stored in another folder. These can be seen in the [otherServers](/otherServers) folder. 
+
+![diagram](https://i.imgur.com/YPlOUan.png)
+
+THen you can see the status like so. Using the following code on a new `t2.small`, you can do `nodetool status` on any cassandra container that you have up, and will see the newly added one(s). `UJ` stands for `joining`. This usually lasts 5-6minutes. Then it is ready to be queried when it turns `UN` 
+
+![connecting](https://i.imgur.com/4TOqyxi.png)
+
+Awesome so now I tried to run my loader tests again, but unfortunately there wasn't very much progress. This made me think that nodejs web was still a bottleneck before cassandra's multi node cluster can be of use.
+
+
+|                             | 1rps                      | 10rps                     | 100rps                     | 1000rps                       |
+|-----------------------------|---------------------------|---------------------------|----------------------------|-------------------------------|
+| Loader.io (single instance) | `100ms` Latency / `0%` errors | `120ms` Latency / `0%` errors | `1280ms` Latency / `0%` errors | `8000ms` Latency / `60%` errors |
+| Loader.io (single instance + extra cassandra node) | `100ms` Latency / `0%` errors | `120ms` Latency / `0%` errors | `1280ms` Latency / `0%` errors | `8000ms` Latency / `60%` errors |
+
+## Nginx Load balancer + multi instance
+
+So I changed the architecture diagram a little bit where on top of everything is an nginx load balancer, and then underneath is an ec2 instance containing 1) independent node (web), and 2) cassandra (node). Now the cassandra node is not necessarilly only queried by the the web app it shares an instance with, but rather joins the larger cassandra ring. This architecture greatly improved the performance!
+
+You can see these additional nodes in the folder  [otherServers](/otherServers). 
+
+```
+.
+├── loadBalancer
+│   ├── docker-compose.yml
+│   ├── limits.conf
+│   ├── nginx.conf
+│   ├── package.json
+│   └── www
+│       └── loaderio-7e0ba27b4ef4b48bd8b2137797bfb78f.txt
+├── node2
+│   ├── cassandra-rackdc.properties
+│   ├── cassandra.yaml
+│   ├── docker-compose.yml
+│   └── package.json
+├── node3
+│   ├── cassandra-rackdc.properties
+│   ├── cassandra.yaml
+│   ├── docker-compose.yml
+│   └── package.json
+├── node4
+│   ├── cassandra-rackdc.properties
+│   ├── cassandra.yaml
+│   ├── docker-compose.yml
+│   └── package.json
+└── node5
+    ├── cassandra-rackdc.properties
+    ├── cassandra.yaml
+    ├── docker-compose.yml
+    └── package.json
+```
+
+To append to the node it typically looks like this in `docker-compose.yml`
+
+```
+version: '2'
+services:
+  web:
+    build: .
+    network_mode: host
+    command: /bin/bash -c "sleep 60 && npm start"
+    depends_on:
+      - cassandra
+  cassandra:
+    image: "cassandra:3.11"
+    network_mode: host
+    environment:
+      - "MAX_HEAP_SIZE=512M"
+      - "HEAP_NEWSIZE=256M"
+      - CASSANDRA_SEEDS=[the original cassandra ip]
+      - CASSANDRA_LISTEN_ADDRESS=auto
+      - CASSANDRA_BROADCAST_ADDRESS=[the public ip for this new node on amazon!]
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+    restart: always
+    volumes:
+      - ~/docker_cassandra_data:/var/lib/cassandra
+      - ./otherServers/node2/cassandra.yaml:/etc/cassandra/cassandra.yaml
+      - ./otherServers/node2/cassandra-rackdc.properties:/etc/cassandra/cassandra-rackdc.properties
+```
+
+![new architecture diagram](https://i.imgur.com/p9HY91Yr.png)
+
+
+## Final optimized results
+
+
+As you can see below I was able to reduce `100rps` from `1.2s` to `91ms` with more nodes. And I can even get `1000rps` in just a little over `2 seconds`. Each node took roughly about 10 min to launch (that includes bootstrap / ready to use time). And since no instance is centralized, they can be added and removed at will. for the higher rps, it seemed to platough after a while so other optimizations that might be able to be done
+
+  - wide column approach (need reviews and ratings table aka 2 requests but could be one table)
+  - scaling vertically (cass likes machines with more ram)
+  - secondary index removal (have reviews a compound index?)
+
+
+
+| loader.io                | 1rps                          | 10rps                         | 100rps                         | 300rps                 | 500rps                  | 1000rps                          |
+|--------------------------|-------------------------------|-------------------------------|--------------------------------|------------------------|-------------------------|----------------------------------|
+| single instance          | `100ms` Latency / `0%` errors | `120ms` Latency / `0%` errors | `1280ms` Latency / `0%` errors | -                      | -                       | `8000ms` Latency / `60%` errors  |
+| nginx + 2 web/cass nodes | `80ms` Latency / `0%` errors  | `80ms` Latency / `0%` errors  | `900ms` Latency / `0%` errors  | `900rps` / `9%` errors | `650ms` / `37%` errors  | -                                |
+| nginx + 3 web/cass nodes | -                             | -                             | `270ms` Latency / `0%` errors  | `600ms` / `10%` errors | `1800ms` / `30%` errors | -                                |
+| nginx + 4 web/cass nodes | -                             | -                             | `150ms` Latency / `0% errors`  | -                      | `284ms` / `0%` errors   | `2000ms` Latency / `0.5%` errors |
+| nginx + 5 web/cass nodes | -                             | -                             | `91ms` Latency / `0%` errors   | `97ms` / `0%` errors   | `325ms` / `0%` errors   | `2082ms` Latency / `1.1%` errors |
+
+
+Below are some charts and final loader.io results
+
+![graphs](https://i.imgur.com/2FFjpXs.png)
+
+![final 100rps](https://i.imgur.com/XQoEeuJ.png)

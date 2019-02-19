@@ -4,25 +4,25 @@ const axios = require('axios');
 
 let DB_HOST;
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === 'production' && process.env.NETWORK_MODE !== 'host') {
   DB_HOST = 'cassandra';
 } else {
   DB_HOST = '127.0.0.1';
 }
- 
 
 // Connecting DB
 const client = new cassandra.Client({
   contactPoints: [DB_HOST], 
   keyspace: process.env.CASSANDRA_DB_NAME,
-  localDataCenter: 'datacenter1'
+  localDataCenter: process.env.DATACENTER,
+  loadBalancing: new cassandra.policies.loadBalancing.DCAwareRoundRobinPolicy( process.env.DATACENTER)
 });
 
 // DB functions
 module.exports = {
   queryDB: function(query,  params=null) {
     return new Promise((resolve, reject) => {
-      client.execute(query, params, { prepare : true }, (err, res) => {
+      client.execute(query, params, { prepare : false }, (err, res) => {
         if (err) {
           reject(err);
         } else {
@@ -76,15 +76,20 @@ module.exports = {
     return HOSTS;
   },
    getUserData: function(id) {
-    return axios.get(`${this.getHosts().rooms}/users/${id}`)
-      .then(res => res.data.data)
-      .then(res => {
-          return { 
-            id: this.id,
-            name: res.user,
-            avatarUrl: res.avatar
-          };
-      });
+    // return axios.get(`${this.getHosts().rooms}/users/${id}`)
+    //   .then(res => res.data.data)
+    //   .then(res => {
+    //       return { 
+    //         id: this.id,
+    //         name: res.user,
+    //         avatarUrl: res.avatar
+    //       };
+    //   });
+      return { 
+        id: this.id,
+        name: null,
+        avatarUrl: null
+      };
   },
   
   getReviewsById: async function(id) {
@@ -121,16 +126,17 @@ module.exports = {
     
     return this.queryDB(queryStr).then((rows) => {
       const averages = {};
-      Object.keys(rows[0]).filter((key) => {
-        return (['review_id','id'].indexOf(key) === -1)
-      }).forEach(rowKey => {
-        averages[remap[rowKey]] = (rows.map((row) => {
-          return row[rowKey];
-        }).reduce((acc, item) => {
-          return acc + item;
-        }) / rows.length).toPrecision(2);
-      });
-      
+      if(rows[0]) {
+        Object.keys(rows[0]).filter((key) => {
+          return (['review_id','id'].indexOf(key) === -1)
+        }).forEach(rowKey => {
+          averages[remap[rowKey]] = (rows.map((row) => {
+            return row[rowKey];
+          }).reduce((acc, item) => {
+            return acc + item;
+          }) / rows.length).toPrecision(2);
+        });
+      }
       return averages;
     });
   },

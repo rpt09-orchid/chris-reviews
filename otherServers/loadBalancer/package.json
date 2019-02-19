@@ -1,0 +1,18 @@
+{
+  "name": "reviews",
+  "version": "1.0.0",
+  "description": "service for reviews",
+  "author": "kent ogisu",
+  "license": "HR",
+  "engines": {
+    "node": ">=10.13.0"
+  },
+  "scripts": {
+    "loadENV": "EC2_URL=ec2-user@ec2-34-221-97-148.us-west-2.compute.amazonaws.com EC2_APP_PATH=/home/ec2-user/app PEM_FILE=~/.ssh/mine.pem",
+    "connect": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-221-97-148.us-west-2.compute.amazonaws.com ",
+    "copyToServer": "rsync --include .git --exclude-from=\"$(git -C . ls-files --exclude-standard -oi --directory >.git/ignores.tmp && echo .git/ignores.tmp)\" -rave \"ssh -i ~/.ssh/mine.pem\" . ec2-user@ec2-34-221-97-148.us-west-2.compute.amazonaws.com:/home/ec2-user/app",
+    "logs": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-221-97-148.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker-compose logs --tail 500  --follow nginx'",
+    "deploy": "npm run copyToServer && ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-221-97-148.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app && docker-compose stop && docker-compose up -d nginx && docker-compose logs --tail 500 --follow nginx'",
+    "dockerRemoteStats": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-221-97-148.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker stats'"
+  }
+}

@@ -3,7 +3,7 @@ FROM node:8.9.4
 COPY . .
 # install npm under production env so dev dependencies dont get installed
 ENV NODE_ENV=production
-RUN npm install
+RUN npm -d install
 # node start up
 CMD node index.js
 EXPOSE 80

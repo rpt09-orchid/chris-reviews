@@ -1,0 +1,23 @@
+{
+  "name": "reviews",
+  "version": "1.0.0",
+  "description": "service for reviews",
+  "author": "kent ogisu",
+  "license": "HR",
+  "engines": {
+    "node": ">=10.13.0"
+  },
+  "scripts": {
+    "loadENV": "EC2_URL=ec2-user@ec2-34-216-249-12.us-west-2.compute.amazonaws.com EC2_APP_PATH=/home/ec2-user/app PEM_FILE=~/.ssh/mine.pem",
+    "connect": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-216-249-12.us-west-2.compute.amazonaws.com ",
+    "build": "cd ../../client && npm run build && cd ../otherServers/node3",
+    "buildDev": "cd ../../client && npm run buildDev && cd ../otherServers/node3",
+    "copyToServer": "npm run build && rsync --include ../../.git --exclude-from=\"$(git -C ../../ ls-files --exclude-standard -oi --directory >../../.git/ignores.tmp && echo ../../.git/ignores.tmp)\" -rave \"ssh -i ~/.ssh/mine.pem\" ../../ ec2-user@ec2-34-216-249-12.us-west-2.compute.amazonaws.com:/home/ec2-user/app && scp -i \"~/.ssh/mine.pem\" ./docker-compose.yml  ec2-user@ec2-34-216-249-12.us-west-2.compute.amazonaws.com:/home/ec2-user/app/docker-compose.yml && scp -i \"~/.ssh/mine.pem\" ../../.env.production ec2-user@ec2-34-216-249-12.us-west-2.compute.amazonaws.com:/home/ec2-user/app/.env && npm run buildDev",
+    "dbLogs": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-216-249-12.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker-compose logs --tail 500  --follow cassandra'",
+    "webLogs": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-216-249-12.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker-compose logs --follow web'",
+    "deployWeb": "npm run copyToServer && ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-216-249-12.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app && docker-compose build web && docker-compose up -d web && docker-compose logs --tail 500 --follow web'",
+    "deployBoth": "npm run copyToServer && ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-216-249-12.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app && docker-compose build && docker-compose up -d  && docker-compose logs --tail 500 --follow'",
+    "dockerRemoteStats": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-216-249-12.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker stats'",
+    "dockerRemoteDBCompactionStats": "ssh -i \"~/.ssh/mine.pem\" ec2-user@ec2-34-216-249-12.us-west-2.compute.amazonaws.com 'cd /home/ec2-user/app  && docker-compose exec -it cassandra bash nodetool compactionstats'"
+  }
+}

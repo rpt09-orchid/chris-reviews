@@ -26,6 +26,7 @@ coverage
 
 #Sensitive Data
 .env
+.env.production
 
 #images
 **/*.jpg

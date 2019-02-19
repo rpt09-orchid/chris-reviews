@@ -36,7 +36,7 @@ if (DB_TYPE === 'psql') {
   cassandra = require('cassandra-driver');
   client = new cassandra.Client({
     contactPoints: [DB_HOST], 
-    localDataCenter: 'datacenter1'
+    localDataCenter: process.env.DATACENTER
   });
  
 }
@@ -178,7 +178,7 @@ const doIterations = async (csv, iterations, tableName, records, numericalInfo) 
  
         const doCOPY = async (precommands='') => {
           // execute
-          const originalCommand = `${precommands} cqlsh --cqlversion=3.4.4 ${DB_HOST} 9042 -f '${__dirname + tableName}.cql'`;
+          const originalCommand = `${precommands} cqlsh --cqlversion=3.4.4 ${DB_HOST} 9042 -f '${__dirname + '/' + tableName}.cql'`;
           // const newCommand = `cassandra-loader -f '${__dirname}/csvs' -host localhost -skipRows 1 -schema "${ process.env.CASSANDRA_DB_NAME}.${tableName}(${Object.keys(records[0]).join(',')})";`;
           await exec(originalCommand).catch(async (error) => {
             if (cassCurrentErrorTry < cassMaxTries) {
@@ -272,7 +272,7 @@ const doIterations = async (csv, iterations, tableName, records, numericalInfo) 
 const createTables = () => {
   const filePath = (DB_TYPE === 'cassandra') ? 'cassandra.cql' : 'postgres.sql';
   return new Promise((resolve, reject) => {
-    fs.readFile(path.resolve(__dirname + filePath), (err, data) => {
+    fs.readFile(path.resolve(__dirname + '/' + filePath), (err, data) => {
       if (err) {
         reject(err);
       } else {

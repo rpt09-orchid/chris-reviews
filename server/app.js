@@ -19,7 +19,7 @@ app.use((req, res, next) => {
     res.status(200).send(JSON.stringify({status: 'success', data: data}));
   };
   res.sendErrorJSON = (error) => {
-    res.status(200).send(JSON.stringify({status: 'error', error: error}));
+    res.status(403).send(JSON.stringify({status: 'error', error: error}));
   };
   next();
 })
@@ -57,12 +57,14 @@ app.get('/reviews/:id(\\d+$)', async (req, res) => {
   } else {
     // Original get request.  Gets all data
     try {
+      // res.status(200).json({error: `just testing node`});
+      // return;
       const reviews = await db.getReviewsById(id);
       const avgRating = await db.getAverageRatings(reviews.map((review) => {
         return review.id;
       }));
       if (!reviews.length) {
-        res.status(404).json({error: `ID ${id} does not exist`});
+        res.status(200).json({error: `ID ${id} has no reviews`});
         return;
       } else {
         res.json({
@@ -71,7 +73,7 @@ app.get('/reviews/:id(\\d+$)', async (req, res) => {
         });
       }
     } catch(err) {
-      res.status(404).json({error: `ID ${id} does not exist: ${err}`});
+      res.status(404).json({error: `ID ${id} had an error: ${err}`});
       console.log('err in process: ', err);
     } 
   }
