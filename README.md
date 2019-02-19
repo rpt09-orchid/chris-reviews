@@ -573,6 +573,9 @@ Awesome so now I tried to run my loader tests again, but unfortunately there was
 
 ### 1.5.11. Nginx Load balancer + multi instance
 
+![new architecture diagram](https://i.imgur.com/p9HY91Yr.png)
+
+
 So I changed the architecture diagram a little bit where on top of everything is an nginx load balancer, and then underneath is an ec2 instance containing 1) independent node (web), and 2) cassandra (node). Now the cassandra node is not necessarilly only queried by the the web app it shares an instance with, but rather joins the larger cassandra ring. This architecture greatly improved the performance!
 
 You can see these additional nodes in the folder  [otherServers](/otherServers). 
@@ -636,13 +639,12 @@ services:
       - ./otherServers/node2/cassandra-rackdc.properties:/etc/cassandra/cassandra-rackdc.properties
 ```
 
-![new architecture diagram](https://i.imgur.com/p9HY91Yr.png)
 
 
 ### 1.5.12. Final optimized results
 
 
-As you can see below I was able to reduce `100rps` from `1.2s` to `91ms` with more nodes. And I can even get `1000rps` in just a little over `2 seconds`. Each node took roughly about 10 min to launch (that includes bootstrap / ready to use time). And since no instance is centralized, they can be added and removed at will. for the higher rps, it seemed to platough after a while so other optimizations that might be able to be done
+As you can see below I was able to reduce `100rps` from `1.2s` to `91ms` with more nodes. And I can even get `1000rps` in just a little over `2 seconds`. Each node took roughly about 10 min to launch (that includes bootstrap / ready to use time). And since no instance is centralized, they can be added and removed at will. for the higher rps, it seemed to plateau after a while so other optimizations that might be able to be done
 
   - wide column approach (need reviews and ratings table aka 2 requests but could be one table)
   - scaling vertically (cass likes machines with more ram)
